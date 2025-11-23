@@ -117,3 +117,24 @@
   color: var(--danger);
   font-weight: bold;
 }
+
+.subtitle {
+  font-size: 13px;
+  color: var(--gray-600);
+  margin-bottom: 16px;
+}
+
+.alert-error {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  color: #991b1b;
+  padding: 16px 20px;
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  border-left: 4px solid var(--danger);
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: slideInRight 0.3s ease-out;
+}
