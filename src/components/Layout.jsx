@@ -1,4 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { FaSignInAlt, FaSignOutAlt, FaHome, FaUsers, FaCar, FaFileContract, FaCalendarAlt, FaUserTie, FaTag, FaCog, FaExclamationTriangle } from "react-icons/fa";
+import Logo from "./Logo";
 import "./Layout.css";
 
 function Layout({ children }) {
@@ -17,23 +19,26 @@ function Layout({ children }) {
   };
 
   const navItems = [
-    { path: "/", label: "Inicio" },
-    { path: "/clientes", label: "Clientes" },
-    { path: "/vehiculos", label: "Vehículos" },
-    { path: "/alquileres", label: "Alquileres" },
-    { path: "/reservas", label: "Reservas" },
-    { path: "/empleados", label: "Empleados" },
-    { path: "/marcas", label: "Marcas" },
-    { path: "/modelos", label: "Modelos" },
-    { path: "/multas", label: "Multas" },
+    { path: "/", label: "Inicio", icon: FaHome },
+    { path: "/clientes", label: "Clientes", icon: FaUsers },
+    { path: "/vehiculos", label: "Vehículos", icon: FaCar },
+    { path: "/alquileres", label: "Alquileres", icon: FaFileContract },
+    { path: "/reservas", label: "Reservas", icon: FaCalendarAlt },
+    { path: "/empleados", label: "Empleados", icon: FaUserTie },
+    { path: "/marcas", label: "Marcas", icon: FaTag },
+    { path: "/modelos", label: "Modelos", icon: FaCog },
+    { path: "/multas", label: "Multas", icon: FaExclamationTriangle },
   ];
 
   return (
     <div className="layout">
       <header className="header">
-        <div className="header-top">
-          <h1 className="header-title">🚗 Sistema de Alquiler de Vehículos</h1>
-
+        <div className="header-brand">
+          <Logo size="medium" />
+          <div className="brand-info">
+            <p className="brand-tagline">Tu alquiler de vehículos simplificado</p>
+          </div>
+          
           {isLogged && (
             <div className="header-right">
               {userEmail && (
@@ -43,6 +48,7 @@ function Layout({ children }) {
                 </span>
               )}
               <button className="logout-btn" onClick={handleLogout}>
+                <FaSignOutAlt style={{ marginRight: '6px' }} />
                 Cerrar sesión
               </button>
             </div>
@@ -54,10 +60,11 @@ function Layout({ children }) {
                 to="/login"
                 className={
                   location.pathname === "/login"
-                    ? "nav-link active login-link"
-                    : "nav-link login-link"
+                    ? "login-btn active"
+                    : "login-btn"
                 }
               >
+                <FaSignInAlt style={{ marginRight: '6px' }} />
                 Iniciar sesión
               </Link>
             </div>
@@ -65,20 +72,24 @@ function Layout({ children }) {
         </div>
 
         {isLogged && (
-          <nav className="nav">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={
-                  location.pathname === item.path
-                    ? "nav-link active"
-                    : "nav-link"
-                }
-              >
-                {item.label}
-              </Link>
-            ))}
+          <nav className="nav-tabs">
+            <div className="nav-tabs-container">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`nav-tab ${isActive ? "active" : ""}`}
+                  >
+                    <Icon className="nav-tab-icon" />
+                    <span className="nav-tab-label">{item.label}</span>
+                    {isActive && <div className="nav-tab-indicator" />}
+                  </Link>
+                );
+              })}
+            </div>
           </nav>
         )}
       </header>
