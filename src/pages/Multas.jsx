@@ -109,11 +109,10 @@ function Multas() {
         </button>
       </div>
 
-      {error && <div className="error">{error}</div>}
-
       {showForm && (
         <div className="form-container" style={{ marginBottom: '2rem' }}>
           <h3>{editingId ? 'Editar Multa' : 'Nueva Multa'}</h3>
+          {error && <div className="error">{error}</div>}
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label>Alquiler *</label>

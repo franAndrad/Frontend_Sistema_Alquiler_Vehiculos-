@@ -239,11 +239,10 @@ function Vehiculos() {
         </select>
       </div>
 
-      {error && <div className="error">{error}</div>}
-
       {showForm && (
         <div className="form-container" style={{ marginBottom: '2rem' }}>
           <h3>{editingId ? 'Editar Vehículo' : 'Nuevo Vehículo'}</h3>
+          {error && <div className="error">{error}</div>}
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label>Modelo<span className="required-asterisk"> *</span></label>

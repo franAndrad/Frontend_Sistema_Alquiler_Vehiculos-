@@ -43,6 +43,7 @@ function Clientes() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setError(null)
     try {
       if (editingId) {
         await clienteAPI.actualizar(editingId, formData)
@@ -99,6 +100,7 @@ function Clientes() {
     })
     setEditingId(null)
     setShowForm(false)
+    setError(null)
   }
 
   if (loading) return <div className="loading">Cargando clientes...</div>
@@ -122,11 +124,10 @@ function Clientes() {
         </button>
       </div>
 
-      {error && <div className="error">{error}</div>}
-
       {showForm && (
         <div className="form-container" style={{ marginBottom: '2rem' }}>
           <h3>{editingId ? 'Editar Cliente' : 'Nuevo Cliente'}</h3>
+          {error && <div className="error">{error}</div>}
           <form onSubmit={handleSubmit}>
             <div className="form-row">
               <div className="form-group">
@@ -257,6 +258,7 @@ function Clientes() {
                 <th>Apellido</th>
                 <th>DNI</th>
                 <th>Email</th>
+                <th>Dirección</th>
                 <th>Vencimiento Licencia</th>
                 <th>Acciones</th>
               </tr>
@@ -269,6 +271,7 @@ function Clientes() {
                   <td>{cliente.apellido}</td>
                   <td>{cliente.dni}</td>
                   <td>{cliente.email}</td>
+                  <td>{cliente.direccion || '-'}</td>
                   <td>{formatearFechaLegible(cliente.licencia_vencimiento)}</td>
                   <td>
                     <div className="actions">

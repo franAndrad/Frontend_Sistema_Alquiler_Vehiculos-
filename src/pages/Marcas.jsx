@@ -83,10 +83,9 @@ function Marcas() {
         </button>
       </div>
 
-      {error && <div className="error">{error}</div>}
-
       {showForm && (
         <div className="form-container" style={{ marginBottom: '2rem' }}>
+          {error && <div className="error">{error}</div>}
           <h3>{editingId ? 'Editar Marca' : 'Nueva Marca'}</h3>
           <form onSubmit={handleSubmit}>
             <div className="form-group">

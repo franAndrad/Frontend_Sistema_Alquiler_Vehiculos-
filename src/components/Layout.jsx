@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FaSignInAlt, FaSignOutAlt, FaHome, FaUsers, FaCar, FaFileContract, FaCalendarAlt, FaUserTie, FaTag, FaCog, FaExclamationTriangle } from "react-icons/fa";
+import { FaSignInAlt, FaSignOutAlt, FaHome, FaUsers, FaCar, FaFileContract, FaCalendarAlt, FaUserTie, FaTag, FaCog, FaExclamationTriangle, FaChartBar } from "react-icons/fa";
 import Logo from "./Logo";
 import "./Layout.css";
 
@@ -28,6 +28,7 @@ function Layout({ children }) {
     { path: "/marcas", label: "Marcas", icon: FaTag },
     { path: "/modelos", label: "Modelos", icon: FaCog },
     { path: "/multas", label: "Multas", icon: FaExclamationTriangle },
+    { path: "/reportes", label: "Reportes", icon: FaChartBar },
   ];
 
   return (

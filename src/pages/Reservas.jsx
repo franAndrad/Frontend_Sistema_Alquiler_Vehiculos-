@@ -120,11 +120,10 @@ function Reservas() {
         </button>
       </div>
 
-      {error && <div className="error">{error}</div>}
-
       {showForm && (
         <div className="form-container" style={{ marginBottom: '2rem' }}>
           <h3>{editingId ? 'Editar Reserva' : 'Nueva Reserva'}</h3>
+          {error && <div className="error">{error}</div>}
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label>Cliente *</label>

@@ -9,6 +9,7 @@ import Empleados from './pages/Empleados'
 import Marcas from './pages/Marcas'
 import Modelos from './pages/Modelos'
 import Multas from './pages/Multas'
+import Reportes from './pages/Reportes'
 import Login from './pages/Login'
 import RequireAuth from './components/RequireAuth'
 import './App.css'
@@ -29,6 +30,7 @@ function App() {
             <Route path="/marcas" element={<Marcas />} />
             <Route path="/modelos" element={<Modelos />} />
             <Route path="/multas" element={<Multas />} />
+            <Route path="/reportes" element={<Reportes />} />
           </Route>
         </Routes>
       </Layout>
