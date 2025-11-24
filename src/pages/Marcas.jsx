@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { marcaAPI } from '../services/api'
+import { syncTableColumns } from '../utils/tableSync'
 import '../components/Table.css'
 import '../components/Form.css'
 
@@ -16,6 +17,12 @@ function Marcas() {
   useEffect(() => {
     cargarMarcas()
   }, [])
+
+  useEffect(() => {
+    if (marcas.length > 0) {
+      setTimeout(() => syncTableColumns(), 100)
+    }
+  }, [marcas])
 
   const cargarMarcas = async () => {
     try {
@@ -116,39 +123,45 @@ function Marcas() {
             <p>No hay marcas registradas</p>
           </div>
         ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {marcas.map((marca) => (
-                <tr key={marca.id}>
-                  <td>{marca.id}</td>
-                  <td>{marca.nombre}</td>
-                  <td>
-                    <div className="actions">
-                      <button
-                        className="btn btn-secondary btn-small"
-                        onClick={() => handleEdit(marca)}
-                      >
-                        Editar
-                      </button>
-                      <button
-                        className="btn btn-danger btn-small"
-                        onClick={() => handleDelete(marca.id)}
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <>
+            <div className="table-header-wrapper">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+              </table>
+            </div>
+            <div className="table-body-wrapper">
+              <table className="table">
+                <tbody>
+                  {marcas.map((marca) => (
+                    <tr key={marca.id}>
+                      <td>{marca.nombre}</td>
+                      <td>
+                        <div className="actions">
+                          <button
+                            className="btn btn-secondary btn-small"
+                            onClick={() => handleEdit(marca)}
+                          >
+                            Editar
+                          </button>
+                          <button
+                            className="btn btn-danger btn-small"
+                            onClick={() => handleDelete(marca.id)}
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>

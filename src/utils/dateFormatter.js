@@ -48,10 +48,25 @@ export const formatearFecha = (fecha, mostrarGuion = false) => {
  * @returns {string} - Fecha formateada como DD/MM/YYYY
  */
 export const formatearFechaLegible = (fecha) => {
-  const fechaFormateada = formatearFecha(fecha)
-  if (!fechaFormateada || fechaFormateada === '-') return '-'
+  if (!fecha) return '-'
   
-  const [year, month, day] = fechaFormateada.split('-')
-  return `${day}/${month}/${year}`
+  // Si es string vacío o solo espacios
+  if (typeof fecha === 'string' && !fecha.trim()) return '-'
+  
+  try {
+    const fechaFormateada = formatearFecha(fecha, true)
+    if (!fechaFormateada || fechaFormateada === '-' || fechaFormateada === '') return '-'
+    
+    const parts = fechaFormateada.split('-')
+    if (parts.length !== 3) return '-'
+    
+    const [year, month, day] = parts
+    if (!year || !month || !day) return '-'
+    
+    return `${day}/${month}/${year}`
+  } catch (error) {
+    console.warn('Error formateando fecha:', error, fecha)
+    return '-'
+  }
 }
 

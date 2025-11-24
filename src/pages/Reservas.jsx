@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { reservaAPI, clienteAPI, vehiculoAPI } from '../services/api'
+import { syncTableColumns } from '../utils/tableSync'
 import '../components/Table.css'
 import '../components/Form.css'
 
@@ -23,6 +24,12 @@ function Reservas() {
     cargarClientes()
     cargarVehiculos()
   }, [])
+
+  useEffect(() => {
+    if (reservas.length > 0) {
+      setTimeout(() => syncTableColumns(), 100)
+    }
+  }, [reservas])
 
   const cargarReservas = async () => {
     try {
@@ -196,61 +203,67 @@ function Reservas() {
             <p>No hay reservas registradas</p>
           </div>
         ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Cliente</th>
-                <th>Vehículo</th>
-                <th>Fecha Inicio</th>
-                <th>Fecha Fin</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reservas.map((reserva) => (
-                <tr key={reserva.id}>
-                  <td>{reserva.id}</td>
-                  <td>{reserva.cliente?.nombre} {reserva.cliente?.apellido}</td>
-                  <td>{reserva.vehiculo?.patente}</td>
-                  <td>{reserva.fecha_inicio}</td>
-                  <td>{reserva.fecha_fin}</td>
-                  <td>
-                    <span style={{
-                      padding: '0.3rem 0.6rem',
-                      borderRadius: '4px',
-                      fontSize: '0.85rem',
-                      backgroundColor: reserva.estado === 'PENDIENTE' ? '#fff3cd' : 
-                                      reserva.estado === 'CONFIRMADA' ? '#d4edda' : '#f8d7da',
-                      color: reserva.estado === 'PENDIENTE' ? '#856404' : 
-                            reserva.estado === 'CONFIRMADA' ? '#155724' : '#721c24'
-                    }}>
-                      {reserva.estado}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="actions">
-                      {reserva.estado !== 'CANCELADA' && (
-                        <button
-                          className="btn btn-warning btn-small"
-                          onClick={() => handleCancelar(reserva.id)}
-                        >
-                          Cancelar
-                        </button>
-                      )}
-                      <button
-                        className="btn btn-secondary btn-small"
-                        onClick={() => handleEdit(reserva)}
-                      >
-                        Editar
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <>
+            <div className="table-header-wrapper">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Cliente</th>
+                    <th>Vehículo</th>
+                    <th>Fecha Inicio</th>
+                    <th>Fecha Fin</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+              </table>
+            </div>
+            <div className="table-body-wrapper">
+              <table className="table">
+                <tbody>
+                  {reservas.map((reserva) => (
+                    <tr key={reserva.id}>
+                      <td>{reserva.cliente?.nombre} {reserva.cliente?.apellido}</td>
+                      <td>{reserva.vehiculo?.patente}</td>
+                      <td>{reserva.fecha_inicio}</td>
+                      <td>{reserva.fecha_fin}</td>
+                      <td>
+                        <span style={{
+                          padding: '0.3rem 0.6rem',
+                          borderRadius: '4px',
+                          fontSize: '0.85rem',
+                          backgroundColor: reserva.estado === 'PENDIENTE' ? '#fff3cd' : 
+                                          reserva.estado === 'CONFIRMADA' ? '#d4edda' : '#f8d7da',
+                          color: reserva.estado === 'PENDIENTE' ? '#856404' : 
+                                reserva.estado === 'CONFIRMADA' ? '#155724' : '#721c24'
+                        }}>
+                          {reserva.estado}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="actions">
+                          {reserva.estado !== 'CANCELADA' && (
+                            <button
+                              className="btn btn-warning btn-small"
+                              onClick={() => handleCancelar(reserva.id)}
+                            >
+                              Cancelar
+                            </button>
+                          )}
+                          <button
+                            className="btn btn-secondary btn-small"
+                            onClick={() => handleEdit(reserva)}
+                          >
+                            Editar
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>

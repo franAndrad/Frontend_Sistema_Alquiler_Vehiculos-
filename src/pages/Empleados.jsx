@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { empleadoAPI } from '../services/api'
+import { syncTableColumns } from '../utils/tableSync'
 import '../components/Table.css'
 import '../components/Form.css'
 
@@ -22,6 +23,12 @@ function Empleados() {
   useEffect(() => {
     cargarEmpleados()
   }, [])
+
+  useEffect(() => {
+    if (empleados.length > 0) {
+      setTimeout(() => syncTableColumns(), 100)
+    }
+  }, [empleados])
 
   const cargarEmpleados = async () => {
     try {
@@ -199,61 +206,67 @@ function Empleados() {
             <p>No hay empleados registrados</p>
           </div>
         ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Apellido</th>
-                <th>DNI</th>
-                <th>Email</th>
-                <th>Dirección</th>
-                <th>Teléfono</th>
-                <th>Rol</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {empleados.map((empleado) => (
-                <tr key={empleado.id}>
-                  <td>{empleado.id}</td>
-                  <td>{empleado.nombre}</td>
-                  <td>{empleado.apellido}</td>
-                  <td>{empleado.dni}</td>
-                  <td>{empleado.email}</td>
-                  <td>{empleado.direccion || '-'}</td>
-                  <td>{empleado.telefono || '-'}</td>
-                  <td>
-                    <span style={{
-                      padding: '0.3rem 0.6rem',
-                      borderRadius: '4px',
-                      fontSize: '0.85rem',
-                      backgroundColor: '#e7f3ff',
-                      color: '#0066cc'
-                    }}>
-                      {empleado.rol}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="actions">
-                      <button
-                        className="btn btn-secondary btn-small"
-                        onClick={() => handleEdit(empleado)}
-                      >
-                        Editar
-                      </button>
-                      <button
-                        className="btn btn-danger btn-small"
-                        onClick={() => handleDelete(empleado.id)}
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <>
+            <div className="table-header-wrapper">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>DNI</th>
+                    <th>Email</th>
+                    <th>Dirección</th>
+                    <th>Teléfono</th>
+                    <th>Rol</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+              </table>
+            </div>
+            <div className="table-body-wrapper">
+              <table className="table">
+                <tbody>
+                  {empleados.map((empleado) => (
+                    <tr key={empleado.id}>
+                      <td>{empleado.nombre}</td>
+                      <td>{empleado.apellido}</td>
+                      <td>{empleado.dni}</td>
+                      <td>{empleado.email}</td>
+                      <td>{empleado.direccion || '-'}</td>
+                      <td>{empleado.telefono || '-'}</td>
+                      <td>
+                        <span style={{
+                          padding: '0.3rem 0.6rem',
+                          borderRadius: '4px',
+                          fontSize: '0.85rem',
+                          backgroundColor: '#e7f3ff',
+                          color: '#0066cc'
+                        }}>
+                          {empleado.rol}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="actions">
+                          <button
+                            className="btn btn-secondary btn-small"
+                            onClick={() => handleEdit(empleado)}
+                          >
+                            Editar
+                          </button>
+                          <button
+                            className="btn btn-danger btn-small"
+                            onClick={() => handleDelete(empleado.id)}
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>

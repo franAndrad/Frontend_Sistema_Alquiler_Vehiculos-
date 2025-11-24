@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { multaAPI, alquilerAPI } from '../services/api'
+import { syncTableColumns } from '../utils/tableSync'
 import '../components/Table.css'
 import '../components/Form.css'
 
@@ -21,6 +22,12 @@ function Multas() {
     cargarMultas()
     cargarAlquileres()
   }, [])
+
+  useEffect(() => {
+    if (multas.length > 0) {
+      setTimeout(() => syncTableColumns(), 100)
+    }
+  }, [multas])
 
   const cargarMultas = async () => {
     try {
@@ -180,45 +187,51 @@ function Multas() {
             <p>No hay multas registradas</p>
           </div>
         ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>ID Alquiler</th>
-                <th>Descripción</th>
-                <th>Monto</th>
-                <th>Fecha</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {multas.map((multa) => (
-                <tr key={multa.id}>
-                  <td>{multa.id}</td>
-                  <td>{multa.id_alquiler}</td>
-                  <td>{multa.descripcion}</td>
-                  <td>${multa.monto?.toLocaleString()}</td>
-                  <td>{multa.fecha}</td>
-                  <td>
-                    <div className="actions">
-                      <button
-                        className="btn btn-secondary btn-small"
-                        onClick={() => handleEdit(multa)}
-                      >
-                        Editar
-                      </button>
-                      <button
-                        className="btn btn-danger btn-small"
-                        onClick={() => handleDelete(multa.id)}
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <>
+            <div className="table-header-wrapper">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>ID Alquiler</th>
+                    <th>Descripción</th>
+                    <th>Monto</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+              </table>
+            </div>
+            <div className="table-body-wrapper">
+              <table className="table">
+                <tbody>
+                  {multas.map((multa) => (
+                    <tr key={multa.id}>
+                      <td>{multa.id_alquiler}</td>
+                      <td>{multa.descripcion}</td>
+                      <td>${multa.monto?.toLocaleString()}</td>
+                      <td>{multa.fecha}</td>
+                      <td>
+                        <div className="actions">
+                          <button
+                            className="btn btn-secondary btn-small"
+                            onClick={() => handleEdit(multa)}
+                          >
+                            Editar
+                          </button>
+                          <button
+                            className="btn btn-danger btn-small"
+                            onClick={() => handleDelete(multa.id)}
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>

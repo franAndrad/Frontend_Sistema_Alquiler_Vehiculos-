@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { alquilerAPI, clienteAPI, vehiculoAPI, empleadoAPI } from '../services/api'
 import { formatearFecha, formatearFechaLegible } from '../utils/dateFormatter'
+import { syncTableColumns } from '../utils/tableSync'
 import '../components/Table.css'
 import '../components/Form.css'
 
@@ -27,6 +28,12 @@ function Alquileres() {
     cargarVehiculos()
     cargarEmpleados()
   }, [])
+
+  useEffect(() => {
+    if (alquileres.length > 0) {
+      setTimeout(() => syncTableColumns(), 100)
+    }
+  }, [alquileres])
 
   const cargarAlquileres = async () => {
     try {
@@ -229,63 +236,69 @@ function Alquileres() {
             <p>No hay alquileres registrados</p>
           </div>
         ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Cliente</th>
-                <th>Vehículo</th>
-                <th>Empleado</th>
-                <th>Fecha Inicio</th>
-                <th>Fecha Fin</th>
-                <th>Costo Total</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {alquileres.map((alquiler) => (
-                <tr key={alquiler.id}>
-                  <td>{alquiler.id}</td>
-                  <td>{alquiler.cliente?.nombre} {alquiler.cliente?.apellido}</td>
-                  <td>{alquiler.vehiculo?.patente}</td>
-                  <td>{alquiler.empleado?.nombre} {alquiler.empleado?.apellido}</td>
-                  <td>{formatearFechaLegible(alquiler.fecha_inicio)}</td>
-                  <td>{formatearFechaLegible(alquiler.fecha_fin)}</td>
-                  <td>{alquiler.costo_total ? `$${alquiler.costo_total.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-'}</td>
-                  <td>
-                    <span style={{
-                      padding: '0.3rem 0.6rem',
-                      borderRadius: '4px',
-                      fontSize: '0.85rem',
-                      backgroundColor: alquiler.estado === 'ACTIVO' ? '#d4edda' : '#f8d7da',
-                      color: alquiler.estado === 'ACTIVO' ? '#155724' : '#721c24'
-                    }}>
-                      {alquiler.estado}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="actions">
-                      {alquiler.estado === 'ACTIVO' && (
-                        <button
-                          className="btn btn-success btn-small"
-                          onClick={() => handleFinalizar(alquiler.id)}
-                        >
-                          Finalizar
-                        </button>
-                      )}
-                      <button
-                        className="btn btn-secondary btn-small"
-                        onClick={() => handleEdit(alquiler)}
-                      >
-                        Editar
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <>
+            <div className="table-header-wrapper">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Cliente</th>
+                    <th>Vehículo</th>
+                    <th>Empleado</th>
+                    <th>Fecha Inicio</th>
+                    <th>Fecha Fin</th>
+                    <th>Costo Total</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+              </table>
+            </div>
+            <div className="table-body-wrapper">
+              <table className="table">
+                <tbody>
+                  {alquileres.map((alquiler) => (
+                    <tr key={alquiler.id}>
+                      <td>{alquiler.cliente?.nombre} {alquiler.cliente?.apellido}</td>
+                      <td>{alquiler.vehiculo?.patente}</td>
+                      <td>{alquiler.empleado?.nombre} {alquiler.empleado?.apellido}</td>
+                      <td>{alquiler.fecha_inicio ? (formatearFechaLegible(alquiler.fecha_inicio) || '-') : '-'}</td>
+                      <td>{alquiler.fecha_fin ? (formatearFechaLegible(alquiler.fecha_fin) || '-') : '-'}</td>
+                      <td>{alquiler.costo_total ? `$${alquiler.costo_total.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-'}</td>
+                      <td>
+                        <span style={{
+                          padding: '0.3rem 0.6rem',
+                          borderRadius: '4px',
+                          fontSize: '0.85rem',
+                          backgroundColor: alquiler.estado === 'ACTIVO' ? '#d4edda' : '#f8d7da',
+                          color: alquiler.estado === 'ACTIVO' ? '#155724' : '#721c24'
+                        }}>
+                          {alquiler.estado}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="actions">
+                          {alquiler.estado === 'ACTIVO' && (
+                            <button
+                              className="btn btn-success btn-small"
+                              onClick={() => handleFinalizar(alquiler.id)}
+                            >
+                              Finalizar
+                            </button>
+                          )}
+                          <button
+                            className="btn btn-secondary btn-small"
+                            onClick={() => handleEdit(alquiler)}
+                          >
+                            Editar
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>

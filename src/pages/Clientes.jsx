@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { clienteAPI } from '../services/api'
 import { FaPlus, FaEdit, FaTrash, FaTimes, FaSave } from 'react-icons/fa'
 import { formatearFecha, formatearFechaLegible } from '../utils/dateFormatter'
+import { syncTableColumns } from '../utils/tableSync'
 import '../components/Table.css'
 import '../components/Form.css'
 
@@ -26,6 +27,12 @@ function Clientes() {
   useEffect(() => {
     cargarClientes()
   }, [])
+
+  useEffect(() => {
+    if (clientes.length > 0) {
+      setTimeout(() => syncTableColumns(), 100)
+    }
+  }, [clientes])
 
   const cargarClientes = async () => {
     try {
@@ -250,53 +257,59 @@ function Clientes() {
             <p>No hay clientes registrados</p>
           </div>
         ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Apellido</th>
-                <th>DNI</th>
-                <th>Email</th>
-                <th>Dirección</th>
-                <th>Vencimiento Licencia</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {clientes.map((cliente) => (
-                <tr key={cliente.id}>
-                  <td>{cliente.id}</td>
-                  <td>{cliente.nombre}</td>
-                  <td>{cliente.apellido}</td>
-                  <td>{cliente.dni}</td>
-                  <td>{cliente.email}</td>
-                  <td>{cliente.direccion || '-'}</td>
-                  <td>{formatearFechaLegible(cliente.licencia_vencimiento)}</td>
-                  <td>
-                    <div className="actions">
-                      <button
-                        className="btn btn-secondary btn-small"
-                        onClick={() => handleEdit(cliente)}
-                        title="Editar cliente"
-                      >
-                        <FaEdit style={{ marginRight: '0.3rem' }} />
-                        Editar
-                      </button>
-                      <button
-                        className="btn btn-danger btn-small"
-                        onClick={() => handleDelete(cliente.id)}
-                        title="Eliminar cliente"
-                      >
-                        <FaTrash style={{ marginRight: '0.3rem' }} />
-                        Eliminar
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <>
+            <div className="table-header-wrapper">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>DNI</th>
+                    <th>Email</th>
+                    <th>Dirección</th>
+                    <th>Vencimiento Licencia</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+              </table>
+            </div>
+            <div className="table-body-wrapper">
+              <table className="table">
+                <tbody>
+                  {clientes.map((cliente) => (
+                    <tr key={cliente.id}>
+                      <td>{cliente.nombre}</td>
+                      <td>{cliente.apellido}</td>
+                      <td>{cliente.dni}</td>
+                      <td>{cliente.email}</td>
+                      <td>{cliente.direccion || '-'}</td>
+                      <td>{formatearFechaLegible(cliente.licencia_vencimiento)}</td>
+                      <td>
+                        <div className="actions">
+                          <button
+                            className="btn btn-secondary btn-small"
+                            onClick={() => handleEdit(cliente)}
+                            title="Editar cliente"
+                          >
+                            <FaEdit style={{ marginRight: '0.3rem' }} />
+                            Editar
+                          </button>
+                          <button
+                            className="btn btn-danger btn-small"
+                            onClick={() => handleDelete(cliente.id)}
+                            title="Eliminar cliente"
+                          >
+                            <FaTrash style={{ marginRight: '0.3rem' }} />
+                            Eliminar
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>

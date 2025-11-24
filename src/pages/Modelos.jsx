@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { modeloAPI, marcaAPI } from '../services/api'
+import { syncTableColumns } from '../utils/tableSync'
 import '../components/Table.css'
 import '../components/Form.css'
 
@@ -20,6 +21,12 @@ function Modelos() {
     cargarModelos()
     cargarMarcas()
   }, [])
+
+  useEffect(() => {
+    if (modelos.length > 0) {
+      setTimeout(() => syncTableColumns(), 100)
+    }
+  }, [modelos])
 
   const cargarModelos = async () => {
     try {
@@ -162,43 +169,49 @@ function Modelos() {
             <p>No hay modelos registrados</p>
           </div>
         ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Marca</th>
-                <th>Nombre</th>
-                <th>Descripción</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {modelos.map((modelo) => (
-                <tr key={modelo.id}>
-                  <td>{modelo.id}</td>
-                  <td>{modelo.marca?.nombre}</td>
-                  <td>{modelo.nombre}</td>
-                  <td>{modelo.descripcion}</td>
-                  <td>
-                    <div className="actions">
-                      <button
-                        className="btn btn-secondary btn-small"
-                        onClick={() => handleEdit(modelo)}
-                      >
-                        Editar
-                      </button>
-                      <button
-                        className="btn btn-danger btn-small"
-                        onClick={() => handleDelete(modelo.id)}
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <>
+            <div className="table-header-wrapper">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Marca</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+              </table>
+            </div>
+            <div className="table-body-wrapper">
+              <table className="table">
+                <tbody>
+                  {modelos.map((modelo) => (
+                    <tr key={modelo.id}>
+                      <td>{modelo.marca?.nombre}</td>
+                      <td>{modelo.nombre}</td>
+                      <td>{modelo.descripcion}</td>
+                      <td>
+                        <div className="actions">
+                          <button
+                            className="btn btn-secondary btn-small"
+                            onClick={() => handleEdit(modelo)}
+                          >
+                            Editar
+                          </button>
+                          <button
+                            className="btn btn-danger btn-small"
+                            onClick={() => handleDelete(modelo.id)}
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>

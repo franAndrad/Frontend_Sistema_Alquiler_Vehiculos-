@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { vehiculoAPI, modeloAPI } from '../services/api'
+import { syncTableColumns } from '../utils/tableSync'
 import { FaPlus, FaEdit, FaTrash, FaTimes, FaSave } from 'react-icons/fa'
 import { validarPatenteArgentina, formatearPatenteInput } from '../utils/patenteValidator'
 import '../components/Table.css'
@@ -34,6 +35,12 @@ function Vehiculos() {
       cargarVehiculos()
     }
   }, [filtroEstado])
+
+  useEffect(() => {
+    if (vehiculos.length > 0) {
+      setTimeout(() => syncTableColumns(), 100)
+    }
+  }, [vehiculos])
 
   const cargarVehiculos = async () => {
     try {
@@ -377,21 +384,26 @@ function Vehiculos() {
             <p>No hay vehículos registrados</p>
           </div>
         ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Patente</th>
-                <th>Modelo</th>
-                <th>Año</th>
-                <th>Tipo</th>
-                <th>Estado</th>
-                <th>Costo Diario</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {vehiculos.map((vehiculo) => {
+          <>
+            <div className="table-header-wrapper">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Patente</th>
+                    <th>Modelo</th>
+                    <th>Año</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                    <th>Costo Diario</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+              </table>
+            </div>
+            <div className="table-body-wrapper">
+              <table className="table">
+                <tbody>
+                  {vehiculos.map((vehiculo) => {
                 if (!vehiculo || !vehiculo.id) return null
                 
                 const modeloNombre = vehiculo.modelo 
@@ -404,7 +416,6 @@ function Vehiculos() {
                 
                 return (
                   <tr key={vehiculo.id}>
-                    <td>{vehiculo.id}</td>
                     <td>{vehiculo.patente || '-'}</td>
                     <td>{modeloNombre}</td>
                     <td>{vehiculo.anio || '-'}</td>
@@ -466,8 +477,10 @@ function Vehiculos() {
                   </tr>
                 )
               })}
-            </tbody>
-          </table>
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>
