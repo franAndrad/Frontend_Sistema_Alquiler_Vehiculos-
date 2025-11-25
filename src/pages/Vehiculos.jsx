@@ -30,31 +30,10 @@ function Vehiculos() {
     cargarModelos();
   }, []);
 
-  useEffect(() => {
-    if (filtroEstado) {
-      cargarVehiculosPorEstado();
-    } else {
-      cargarVehiculos();
-    }
-  }, [filtroEstado]);
-
   const cargarVehiculos = async () => {
     try {
       setLoading(true);
       const data = await vehiculoAPI.listar();
-      setVehiculos(data);
-      setError(null);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const cargarVehiculosPorEstado = async () => {
-    try {
-      setLoading(true);
-      const data = await vehiculoAPI.obtenerPorEstado(filtroEstado);
       setVehiculos(data);
       setError(null);
     } catch (err) {
@@ -205,6 +184,12 @@ function Vehiculos() {
     setError(null);
   };
 
+  // 🔹 APLICAR FILTRO EN EL FRONT
+  const vehiculosFiltrados =
+    filtroEstado === ""
+      ? vehiculos
+      : vehiculos.filter((v) => v.estado === filtroEstado);
+
   if (loading) return <div className="loading">Cargando vehículos...</div>;
 
   return (
@@ -259,7 +244,6 @@ function Vehiculos() {
           <option value="">Todos</option>
           <option value="DISPONIBLE">Disponible</option>
           <option value="ALQUILADO">Alquilado</option>
-          <option value="EN_MANTENIMIENTO">En Mantenimiento</option>
         </select>
       </div>
 
@@ -468,9 +452,9 @@ function Vehiculos() {
 
       {/* Tabla */}
       <div className="table-container">
-        {vehiculos.length === 0 ? (
+        {vehiculosFiltrados.length === 0 ? (
           <div className="empty-state">
-            <p>No hay vehículos registrados</p>
+            <p>No hay vehículos registrados para ese filtro</p>
           </div>
         ) : (
           <table className="table">
@@ -486,7 +470,7 @@ function Vehiculos() {
               </tr>
             </thead>
             <tbody>
-              {vehiculos.map((vehiculo) => {
+              {vehiculosFiltrados.map((vehiculo) => {
                 if (!vehiculo || !vehiculo.id) return null;
 
                 const modeloNombre = vehiculo.modelo

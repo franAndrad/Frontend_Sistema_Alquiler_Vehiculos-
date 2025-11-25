@@ -88,7 +88,7 @@ function Reportes() {
       window.scrollTo(0, 0);
 
       const canvas = await html2canvas(element, {
-        scale: 2, // mejor calidad
+        scale: 2, 
         useCORS: true,
       });
 
@@ -277,7 +277,7 @@ function Reportes() {
 
             {/* Cuerpo que se exporta a PDF: HEADER + CONTENIDO */}
             <div className="modal-body" ref={reporteRef}>
-              {/* Header azul del reporte (esto SÍ sale en el PDF) */}
+              {/* Header azul del reporte */}
               <div className="reporte-header">
                 <h3>
                   {reporteTipo === "periodo" ? (
