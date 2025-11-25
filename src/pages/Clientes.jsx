@@ -325,7 +325,7 @@ function Clientes() {
                 <th>DNI</th>
                 <th>Email</th>
                 <th>Dirección</th>
-                <th>Vencimiento Licencia</th>
+                <th>Vto Licencia</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -335,7 +335,7 @@ function Clientes() {
                   <td>{cliente.nombre}</td>
                   <td>{cliente.apellido}</td>
                   <td>{cliente.dni}</td>
-                  <td>{cliente.email}</td>
+                   <td style={{maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{cliente.email}</td>
                   <td>{cliente.direccion || "-"}</td>
                   <td>{formatearFechaLegible(cliente.licencia_vencimiento)}</td>
                   <td>

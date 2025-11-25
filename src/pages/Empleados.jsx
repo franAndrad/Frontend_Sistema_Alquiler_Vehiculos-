@@ -249,10 +249,31 @@ function Empleados() {
                   <td>{empleado.nombre}</td>
                   <td>{empleado.apellido}</td>
                   <td>{empleado.dni}</td>
-                  <td>{empleado.email}</td>
+                  <td style={{maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{empleado.email}</td>
                   <td>{empleado.direccion || "-"}</td>
                   <td>{empleado.telefono || "-"}</td>
-                  <td>{empleado.rol}</td>
+                  <td>
+                        <span
+                      style={{
+                        padding: "0.3rem 0.6rem",
+                        borderRadius: "4px",
+                        fontSize: "0.85rem",
+                        backgroundColor:
+                          empleado.rol === "ADMIN"
+                            ? "#d4edda"
+                            : empleado.rol === "ATENCION"
+                            ? "#fff3cd"
+                            : "#f8d7da",
+                        color:
+                          empleado.rol === "ADMIN"
+                            ? "#155724"
+                            : empleado.rol === "ATENCION"
+                            ? "#856404"
+                            : "#721c24",
+                      }}
+                    >
+                      {empleado.rol}</span>
+                  </td>
                   <td>
                     <div className="actions">
                       <button

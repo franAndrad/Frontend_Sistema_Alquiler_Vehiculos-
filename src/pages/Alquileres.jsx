@@ -309,7 +309,29 @@ function Alquileres() {
                   <td>{alquiler.vehiculo?.patente}</td>
                   <td>{formatearFechaLegible(alquiler.fecha_inicio)}</td>
                   <td>{formatearFechaLegible(alquiler.fecha_fin)}</td>
-                  <td>{alquiler.estado}</td>
+                  <td>
+                    <span
+                      style={{
+                        padding: "0.3rem 0.6rem",
+                        borderRadius: "4px",
+                        fontSize: "0.85rem",
+                        backgroundColor:
+                          alquiler.estado === "ACTIVO"
+                            ? "#d4edda"
+                            : alquiler.estado === "FINALIZADO"
+                            ? "#fff3cd"
+                            : "#f8d7da",
+                        color:
+                          alquiler.estado === "ACTIVO"
+                            ? "#155724"
+                            : alquiler.estado === "FINALIZADO"
+                            ? "#856404"
+                            : "#721c24",
+                      }}
+                    >
+                      {alquiler.estado}
+                    </span>
+                  </td>
                   <td>
                     <div className="actions">
                       {alquiler.estado !== "Finalizado" && (

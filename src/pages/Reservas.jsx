@@ -267,7 +267,37 @@ function Reservas() {
                   </td>
                   <td>{reserva.vehiculo?.patente}</td>
                   <td>{formatearFechaLegible(reserva.fecha_reserva)}</td>
-                  <td>{reserva.estado}</td>
+                  <td>
+                    <span
+                      style={{
+                        padding: "0.3rem 0.6rem",
+                        borderRadius: "4px",
+                        fontSize: "0.85rem",
+                        backgroundColor:
+                          reserva.estado === "CONFIRMADA"
+                            ? "#e3fcec" 
+                            : reserva.estado === "FINALIZADA"
+                            ? "#e0e7ff" 
+                            : reserva.estado === "EXPIRADA"
+                            ? "#fff3cd" 
+                            : reserva.estado === "CANCELADA"
+                            ? "#ffeaea" 
+                            : "#f8f9fa",
+                        color:
+                          reserva.estado === "CONFIRMADA"
+                            ? "#218838"
+                            : reserva.estado === "FINALIZADA"
+                            ? "#1e40af" 
+                            : reserva.estado === "EXPIRADA"
+                            ? "#856404" 
+                            : reserva.estado === "CANCELADA"
+                            ? "#c00" 
+                            : "#333", 
+                      }}
+                    >
+                      {reserva.estado}
+                    </span>
+                  </td>
                   <td>
                     <div className="actions">
                       {reserva.estado !== "Cancelada" && (

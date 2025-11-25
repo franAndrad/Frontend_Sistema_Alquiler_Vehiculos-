@@ -1,3 +1,23 @@
+.table-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table th {
+  border-right: none !important;
+  box-shadow: none !important;
+}
+
+.table {
+  width: 100%;
+  min-width: 420px;
+  max-width: 100%;
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 420px;
+  max-width: 100%;
+}
+
+
 .table-container {
   background: var(--white);
   border-radius: var(--radius-lg);
@@ -6,26 +26,21 @@
   backdrop-filter: blur(10px);
   animation: fadeInUp 0.4s ease-out;
   width: 100%;
-  overflow-x: auto;       /* si no entra, aparece scroll horizontal */
+  overflow-x: auto;
 }
 
-/* Tabla básica */
-.table {
-  width: 100%;
-  min-width: 720px;       /* fuerza que las columnas tengan espacio */
-  border-collapse: collapse;
-  border-spacing: 0;
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 }
 
-/* Header */
-.table thead {
-  background: linear-gradient(
-    135deg,
-    var(--brand-primary-light) 0%,
-    var(--brand-secondary-light) 100%
-  );
-  border-bottom: 2px solid var(--brand-primary);
+.actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
+
 
 .table th {
   padding: 10px 8px;
@@ -35,14 +50,40 @@
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  white-space: nowrap;        /* NO cortar encabezados (no más "VENCIMIEN / TO") */
+  white-space: nowrap;    
+  background: linear-gradient(135deg, var(--brand-primary-light) 0%, var(--brand-secondary-light) 100%) !important;
+  border-bottom: 3px solid #43ea7a !important;
+  border-right: none !important;
 }
 
-/* Celdas */
+.table thead {
+  background: linear-gradient(135deg, var(--brand-primary-light) 0%, var(--brand-secondary-light) 100%);
+  border-bottom: 2px solid var(--brand-primary);
+  margin: 0;
+  padding: 0;
+  display: table-header-group;
+  position: relative;
+}
+
+.table thead::after {
+  content: "";
+  display: block;
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, #43ea7a);
+  border-radius: 0 0 8px 8px;
+  z-index: 1;
+}
+
+
 .table td {
   padding: 12px 8px;
-  text-align: left;
-  border-bottom: 1px solid var(--gray-200);
+    border-right: none !important; 
+    border-left: none !important; 
+    box-shadow: none !important; 
   color: var(--gray-900);
   font-size: 14px;
   white-space: nowrap;        /* una línea */
@@ -50,7 +91,26 @@
   text-overflow: ellipsis;    /* si es muy largo, ... */
 }
 
-/* Hover de fila */
+
+@media (max-width: 900px) {
+  .table th,
+  .table td {
+    text-align: center;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
 .table tbody tr:hover {
   background: linear-gradient(
     90deg,
@@ -79,6 +139,9 @@
   cursor: pointer;
   transition: background 0.18s, box-shadow 0.18s;
   box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  min-width: 110px;
+  max-width: 140px;
+  justify-content: center;
 }
 .actions .btn-secondary {
   background: var(--brand-primary-light);
@@ -120,7 +183,7 @@
   border-radius: 8px;
 }
 
-/* Un poco de animación opcional del contenedor */
+
 
 @keyframes fadeInUp {
   from {
@@ -133,11 +196,20 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 900px) {
+  .actions {
+    flex-direction: column;
+    gap: 0.3rem;
+    align-items: stretch;
+  }
   .actions .btn {
     font-size: 12px;
     padding: 5px 8px;
     border-radius: 5px;
+    min-width: 100px;
+    max-width: 110px;
+    width: 100%;
+    justify-content: center;
   }
   .empty-state {
     padding: 1.2rem 0;
@@ -154,3 +226,4 @@
     border-radius: 6px;
   }
 }
+
