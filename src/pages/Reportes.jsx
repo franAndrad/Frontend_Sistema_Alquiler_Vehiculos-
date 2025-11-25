@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { alquilerAPI } from "../services/api";
 import { formatearFechaLegible } from "../utils/dateFormatter";
 import { FaChartBar, FaCar, FaCalendarAlt } from "react-icons/fa";
@@ -6,6 +6,8 @@ import "../components/Table.css";
 import "../components/Form.css";
 import "./Reportes.css";
 import BarChart from "../components/BarChart";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 function Reportes() {
   const [loading, setLoading] = useState(false);
@@ -19,6 +21,9 @@ function Reportes() {
     limit: 10,
     anio: "",
   });
+
+  // 🔹 Referencia al contenido que se exportará a PDF
+  const reporteRef = useRef(null);
 
   const handleGenerarReporte = async () => {
     setError(null);
@@ -44,7 +49,7 @@ function Reportes() {
           );
         }
 
-        // SOLO AÑO – se elimina mes
+        // SOLO AÑO
         data = await alquilerAPI.facturacionMensual(filtros.anio);
       }
 
@@ -66,6 +71,36 @@ function Reportes() {
     });
     setDatosReporte([]);
     setError(null);
+  };
+
+  // 🔹 Exportar a PDF usando html2canvas + jsPDF
+  const handleExportPDF = async () => {
+    if (!reporteRef.current) return;
+
+    try {
+      const element = reporteRef.current;
+
+      // Opcional: podés scrollear arriba antes para evitar cortes raros
+      window.scrollTo(0, 0);
+
+      const canvas = await html2canvas(element, {
+        scale: 2, // mejor calidad
+        useCORS: true,
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      // Si la altura excede una página, podrías agregar lógica para varias páginas.
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`reporte-${reporteTipo}-${Date.now()}.pdf`);
+    } catch (e) {
+      console.error(e);
+      alert("Ocurrió un error al generar el PDF");
+    }
   };
 
   return (
@@ -196,136 +231,156 @@ function Reportes() {
 
       {/* RESULTADOS */}
       {datosReporte.length > 0 && (
-        <div>
-          {/* Header visual */}
-          <div className="reporte-header">
-            <h3>
-              {reporteTipo === "periodo" ? (
-                <>
-                  <FaCalendarAlt style={{ marginRight: "0.5rem" }} />
-                  Alquileres del Período
-                </>
-              ) : reporteTipo === "vehiculos-mas-alquilados" ? (
-                <>
-                  <FaCar style={{ marginRight: "0.5rem" }} />
-                  Vehículos Más Alquilados
-                </>
-              ) : (
-                <>
-                  <FaChartBar style={{ marginRight: "0.5rem" }} />
-                  Facturación Mensual
-                </>
-              )}
-            </h3>
-
-            <p className="reporte-info">
-              {reporteTipo === "facturacion-mensual"
-                ? `Facturación total del año ${filtros.anio}`
-                : reporteTipo === "periodo"
-                ? `Período: ${formatearFechaLegible(
-                    filtros.desde
-                  )} - ${formatearFechaLegible(filtros.hasta)}`
-                : `Top ${filtros.limit} vehículos más alquilados`}
-            </p>
+        <>
+          {/* Botón de exportar a PDF */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginBottom: "1rem",
+            }}
+          >
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={handleExportPDF}
+            >
+              Exportar a PDF
+            </button>
           </div>
 
-          {/* Gráfico de facturación mensual */}
-          {reporteTipo === "facturacion-mensual" ? (
-            <div className="chart-container">
-              <BarChart
-                labels={datosReporte.map((x) => x.mes)}
-                values={datosReporte.map((x) => x.total)}
-              />
-            </div>
-          ) : (
-            <div className="table-container">
-              {/* Tablas existentes */}
-              {reporteTipo === "periodo" ? (
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Cliente</th>
-                      <th>Vehículo</th>
-                      <th>Empleado</th>
-                      <th>Fecha Inicio</th>
-                      <th>Fecha Fin</th>
-                      <th>Costo Total</th>
-                      <th>Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {datosReporte.map((alq) => (
-                      <tr key={alq.id}>
-                        <td>
-                          {alq.cliente?.nombre} {alq.cliente?.apellido}
-                        </td>
-                        <td>{alq.vehiculo?.patente}</td>
-                        <td>
-                          {alq.empleado?.nombre} {alq.empleado?.apellido}
-                        </td>
-                        <td>{formatearFechaLegible(alq.fecha_inicio)}</td>
-                        <td>{formatearFechaLegible(alq.fecha_fin)}</td>
-                        <td>
-                          {alq.costo_total
-                            ? `$${alq.costo_total.toLocaleString("es-AR", {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}`
-                            : "-"}
-                        </td>
-                        <td>
-                          <span
-                            className="estado-pill"
-                            data-estado={alq.estado}
-                          >
-                            {alq.estado}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Posición</th>
-                      <th>Patente</th>
-                      <th>Modelo</th>
-                      <th>Alquileres</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {datosReporte.map((item, index) => {
-                      const modelo = item.vehiculo?.modelo
-                        ? `${item.vehiculo.modelo.marca?.nombre || ""} ${
-                            item.vehiculo.modelo.nombre || ""
-                          }`
-                        : "-";
+          {/* Todo lo que se exporta a PDF va dentro de este contenedor */}
+          <div ref={reporteRef}>
+            {/* Header visual */}
+            <div className="reporte-header">
+              <h3>
+                {reporteTipo === "periodo" ? (
+                  <>
+                    <FaCalendarAlt style={{ marginRight: "0.5rem" }} />
+                    Alquileres del Período
+                  </>
+                ) : reporteTipo === "vehiculos-mas-alquilados" ? (
+                  <>
+                    <FaCar style={{ marginRight: "0.5rem" }} />
+                    Vehículos Más Alquilados
+                  </>
+                ) : (
+                  <>
+                    <FaChartBar style={{ marginRight: "0.5rem" }} />
+                    Facturación Mensual
+                  </>
+                )}
+              </h3>
 
-                      return (
-                        <tr key={item.vehiculo_id || index}>
+              <p className="reporte-info">
+                {reporteTipo === "facturacion-mensual"
+                  ? `Facturación total del año ${filtros.anio}`
+                  : reporteTipo === "periodo"
+                  ? `Período: ${formatearFechaLegible(
+                      filtros.desde
+                    )} - ${formatearFechaLegible(filtros.hasta)}`
+                  : `Top ${filtros.limit} vehículos más alquilados`}
+              </p>
+            </div>
+
+            {/* Gráfico de facturación mensual */}
+            {reporteTipo === "facturacion-mensual" ? (
+              <div className="chart-container">
+                <BarChart
+                  labels={datosReporte.map((x) => x.mes)}
+                  values={datosReporte.map((x) => x.total)}
+                />
+              </div>
+            ) : (
+              <div className="table-container">
+                {/* Tablas existentes */}
+                {reporteTipo === "periodo" ? (
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Cliente</th>
+                        <th>Vehículo</th>
+                        <th>Empleado</th>
+                        <th>Fecha Inicio</th>
+                        <th>Fecha Fin</th>
+                        <th>Costo Total</th>
+                        <th>Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {datosReporte.map((alq) => (
+                        <tr key={alq.id}>
                           <td>
-                            <span className="ranking-badge">{index + 1}</span>
+                            {alq.cliente?.nombre} {alq.cliente?.apellido}
                           </td>
-                          <td>{item.vehiculo?.patente || "-"}</td>
-                          <td>{modelo}</td>
+                          <td>{alq.vehiculo?.patente}</td>
                           <td>
-                            <strong>
-                              {item.cantidad_alquileres ||
-                                item.total_alquileres ||
-                                0}
-                            </strong>
+                            {alq.empleado?.nombre} {alq.empleado?.apellido}
+                          </td>
+                          <td>{formatearFechaLegible(alq.fecha_inicio)}</td>
+                          <td>{formatearFechaLegible(alq.fecha_fin)}</td>
+                          <td>
+                            {alq.costo_total
+                              ? `$${alq.costo_total.toLocaleString("es-AR", {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}`
+                              : "-"}
+                          </td>
+                          <td>
+                            <span
+                              className="estado-pill"
+                              data-estado={alq.estado}
+                            >
+                              {alq.estado}
+                            </span>
                           </td>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          )}
-        </div>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Posición</th>
+                        <th>Patente</th>
+                        <th>Modelo</th>
+                        <th>Alquileres</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {datosReporte.map((item, index) => {
+                        const modelo = item.vehiculo?.modelo
+                          ? `${item.vehiculo.modelo.marca?.nombre || ""} ${
+                              item.vehiculo.modelo.nombre || ""
+                            }`
+                          : "-";
+
+                        return (
+                          <tr key={item.vehiculo_id || index}>
+                            <td>
+                              <span className="ranking-badge">{index + 1}</span>
+                            </td>
+                            <td>{item.vehiculo?.patente || "-"}</td>
+                            <td>{modelo}</td>
+                            <td>
+                              <strong>
+                                {item.cantidad_alquileres ||
+                                  item.total_alquileres ||
+                                  0}
+                              </strong>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            )}
+          </div>
+        </>
       )}
 
       {/* VACÍO */}

@@ -26,7 +26,6 @@
   margin: 0;
 }
 
-/* Badge de ranking dentro de la celda, sin romper la fila */
 .ranking-badge {
   display: inline-flex;
   align-items: center;
@@ -45,3 +44,5 @@
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
   vertical-align: middle;
 }
+
+
