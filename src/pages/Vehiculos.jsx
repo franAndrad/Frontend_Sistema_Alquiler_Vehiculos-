@@ -1,243 +1,260 @@
-import { useState, useEffect } from 'react'
-import { vehiculoAPI, modeloAPI } from '../services/api'
-import { syncTableColumns } from '../utils/tableSync'
-import { FaPlus, FaEdit, FaTrash, FaTimes, FaSave } from 'react-icons/fa'
-import { validarPatenteArgentina, formatearPatenteInput } from '../utils/patenteValidator'
-import '../components/Table.css'
-import '../components/Form.css'
+import { useState, useEffect } from "react";
+import { vehiculoAPI, modeloAPI } from "../services/api";
+import { FaPlus, FaEdit, FaTrash, FaTimes, FaSave } from "react-icons/fa";
+import {
+  validarPatenteArgentina,
+  formatearPatenteInput,
+} from "../utils/patenteValidator";
+import "../components/Table.css";
+import "../components/Form.css";
 
 function Vehiculos() {
-  const [vehiculos, setVehiculos] = useState([])
-  const [modelos, setModelos] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [showForm, setShowForm] = useState(false)
-  const [editingId, setEditingId] = useState(null)
-  const [filtroEstado, setFiltroEstado] = useState('')
-  const [patenteError, setPatenteError] = useState('')
+  const [vehiculos, setVehiculos] = useState([]);
+  const [modelos, setModelos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [filtroEstado, setFiltroEstado] = useState("");
+  const [patenteError, setPatenteError] = useState("");
   const [formData, setFormData] = useState({
-    id_modelo: '',
-    anio: '',
-    tipo: '',
-    patente: '',
-    costo_diario: '',
-  })
+    id_modelo: "",
+    anio: "",
+    tipo: "",
+    patente: "",
+    costo_diario: "",
+  });
 
   useEffect(() => {
-    cargarVehiculos()
-    cargarModelos()
-  }, [])
+    cargarVehiculos();
+    cargarModelos();
+  }, []);
 
   useEffect(() => {
     if (filtroEstado) {
-      cargarVehiculosPorEstado()
+      cargarVehiculosPorEstado();
     } else {
-      cargarVehiculos()
+      cargarVehiculos();
     }
-  }, [filtroEstado])
-
-  useEffect(() => {
-    if (vehiculos.length > 0) {
-      setTimeout(() => syncTableColumns(), 100)
-    }
-  }, [vehiculos])
+  }, [filtroEstado]);
 
   const cargarVehiculos = async () => {
     try {
-      setLoading(true)
-      const data = await vehiculoAPI.listar()
-      setVehiculos(data)
-      setError(null)
+      setLoading(true);
+      const data = await vehiculoAPI.listar();
+      setVehiculos(data);
+      setError(null);
     } catch (err) {
-      setError(err.message)
+      setError(err.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const cargarVehiculosPorEstado = async () => {
     try {
-      setLoading(true)
-      const data = await vehiculoAPI.obtenerPorEstado(filtroEstado)
-      setVehiculos(data)
-      setError(null)
+      setLoading(true);
+      const data = await vehiculoAPI.obtenerPorEstado(filtroEstado);
+      setVehiculos(data);
+      setError(null);
     } catch (err) {
-      setError(err.message)
+      setError(err.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const cargarModelos = async () => {
     try {
-      const data = await modeloAPI.listar()
-      setModelos(data)
+      const data = await modeloAPI.listar();
+      setModelos(data);
     } catch (err) {
-      console.error('Error cargando modelos:', err)
+      console.error("Error cargando modelos:", err);
     }
-  }
+  };
 
   const handlePatenteChange = (e) => {
-    const valor = e.target.value
-    const patenteFormateada = formatearPatenteInput(valor)
-    const validacion = validarPatenteArgentina(patenteFormateada)
-    
-    setFormData({ ...formData, patente: patenteFormateada })
-    
+    const valor = e.target.value;
+    const patenteFormateada = formatearPatenteInput(valor);
+    const validacion = validarPatenteArgentina(patenteFormateada);
+
+    setFormData({ ...formData, patente: patenteFormateada });
+
     if (patenteFormateada.length > 0 && !validacion.isValid) {
-      setPatenteError(validacion.message)
+      setPatenteError(validacion.message);
     } else {
-      setPatenteError('')
+      setPatenteError("");
     }
-  }
+  };
 
   const handleCostoChange = (e) => {
-    let valor = e.target.value.replace(/[^0-9.,]/g, '')
-    // Permitir solo números, punto o coma
-    setFormData({ ...formData, costo_diario: valor })
-  }
+    let valor = e.target.value.replace(/[^0-9.,]/g, "");
+    setFormData({ ...formData, costo_diario: valor });
+  };
 
   const formatCostoDisplay = (valor) => {
-    if (!valor) return ''
-    // Convertir a número (acepta tanto punto como coma como separador decimal)
-    const numero = parseFloat(valor.replace(',', '.'))
-    if (isNaN(numero)) return valor
-    return numero.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  }
+    if (!valor) return "";
+    const numero = parseFloat(valor.replace(",", "."));
+    if (isNaN(numero)) return valor;
+    return numero.toLocaleString("es-AR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
 
   const parseCostoToNumber = (valor) => {
-    if (!valor) return 0
-    // Remover puntos de miles y convertir coma a punto
-    const limpio = valor.replace(/\./g, '').replace(',', '.')
-    return parseFloat(limpio) || 0
-  }
+    if (!valor) return 0;
+    const limpio = valor.replace(/\./g, "").replace(",", ".");
+    return parseFloat(limpio) || 0;
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    
-    // Validar patente antes de enviar
-    const validacionPatente = validarPatenteArgentina(formData.patente)
+    e.preventDefault();
+
+    const validacionPatente = validarPatenteArgentina(formData.patente);
     if (!validacionPatente.isValid) {
-      setPatenteError(validacionPatente.message)
-      return
+      setPatenteError(validacionPatente.message);
+      return;
     }
 
     try {
       const data = {
         ...formData,
-        id_modelo: parseInt(formData.id_modelo),
-        anio: parseInt(formData.anio),
+        id_modelo: parseInt(formData.id_modelo, 10),
+        anio: parseInt(formData.anio, 10),
         patente: validacionPatente.patenteFormateada,
         costo_diario: parseCostoToNumber(formData.costo_diario),
-      }
+      };
+
       if (editingId) {
-        await vehiculoAPI.actualizar(editingId, data)
+        await vehiculoAPI.actualizar(editingId, data);
       } else {
-        await vehiculoAPI.crear(data)
+        await vehiculoAPI.crear(data);
       }
-      cargarVehiculos()
-      resetForm()
-      setPatenteError('')
+
+      await cargarVehiculos();
+      resetForm();
+      setPatenteError("");
     } catch (err) {
-      setError(err.message)
+      setError(err.message);
     }
-  }
+  };
 
   const handleEdit = (vehiculo) => {
-    try {
-      if (!vehiculo || !vehiculo.id) {
-        setError('Error: Vehículo inválido')
-        return
-      }
-
-      setEditingId(vehiculo.id)
-      
-      // Formatear costo_diario para el input (convertir número a string con formato)
-      let costoFormateado = ''
-      if (vehiculo.costo_diario !== null && vehiculo.costo_diario !== undefined) {
-        const costoNum = typeof vehiculo.costo_diario === 'number' 
-          ? vehiculo.costo_diario 
-          : parseFloat(vehiculo.costo_diario)
-        if (!isNaN(costoNum) && costoNum > 0) {
-          // Formatear con coma como separador decimal
-          costoFormateado = costoNum.toFixed(2).replace('.', ',')
-        }
-      }
-      
-      // Asegurar que modelo existe y tiene id
-      const modeloId = (vehiculo.modelo && vehiculo.modelo.id) 
-        ? vehiculo.modelo.id.toString() 
-        : ''
-      
-      setFormData({
-        id_modelo: modeloId,
-        anio: (vehiculo.anio !== null && vehiculo.anio !== undefined) 
-          ? vehiculo.anio.toString() 
-          : '',
-        tipo: vehiculo.tipo || '',
-        patente: vehiculo.patente || '',
-        costo_diario: costoFormateado,
-      })
-      setShowForm(true)
-      setPatenteError('')
-      setError(null) // Limpiar errores previos
-    } catch (error) {
-      console.error('Error al editar vehículo:', error)
-      setError('Error al cargar los datos del vehículo para editar: ' + error.message)
+    if (!vehiculo || !vehiculo.id) {
+      setError("Error: Vehículo inválido");
+      return;
     }
-  }
+
+    setEditingId(vehiculo.id);
+
+    let costoFormateado = "";
+    if (vehiculo.costo_diario !== null && vehiculo.costo_diario !== undefined) {
+      const costoNum =
+        typeof vehiculo.costo_diario === "number"
+          ? vehiculo.costo_diario
+          : parseFloat(vehiculo.costo_diario);
+      if (!isNaN(costoNum) && costoNum > 0) {
+        costoFormateado = costoNum.toFixed(2).replace(".", ",");
+      }
+    }
+
+    const modeloId =
+      vehiculo.modelo && vehiculo.modelo.id
+        ? vehiculo.modelo.id.toString()
+        : "";
+
+    setFormData({
+      id_modelo: modeloId,
+      anio:
+        vehiculo.anio !== null && vehiculo.anio !== undefined
+          ? vehiculo.anio.toString()
+          : "",
+      tipo: vehiculo.tipo || "",
+      patente: vehiculo.patente || "",
+      costo_diario: costoFormateado,
+    });
+
+    setShowForm(true);
+    setPatenteError("");
+    setError(null);
+  };
 
   const handleDelete = async (id) => {
-    if (window.confirm('¿Está seguro de eliminar este vehículo?')) {
-      try {
-        await vehiculoAPI.eliminar(id)
-        cargarVehiculos()
-      } catch (err) {
-        setError(err.message)
-      }
+    if (!window.confirm("¿Está seguro de eliminar este vehículo?")) return;
+
+    try {
+      await vehiculoAPI.eliminar(id);
+      await cargarVehiculos();
+    } catch (err) {
+      setError(err.message);
     }
-  }
+  };
 
   const resetForm = () => {
     setFormData({
-      id_modelo: '',
-      anio: '',
-      tipo: '',
-      patente: '',
-      costo_diario: '',
-    })
-    setEditingId(null)
-    setShowForm(false)
-    setPatenteError('')
-  }
+      id_modelo: "",
+      anio: "",
+      tipo: "",
+      patente: "",
+      costo_diario: "",
+    });
+    setEditingId(null);
+    setShowForm(false);
+    setPatenteError("");
+    setError(null);
+  };
 
-  if (loading) return <div className="loading">Cargando vehículos...</div>
+  if (loading) return <div className="loading">Cargando vehículos...</div>;
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+      {/* Header + botón */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "24px",
+        }}
+      >
         <h2 style={{ margin: 0 }}>Vehículos</h2>
-        <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
+        <button
+          className="btn btn-primary"
+          onClick={() => setShowForm(!showForm)}
+        >
           {showForm ? (
             <>
-              <FaTimes style={{ marginRight: '0.5rem' }} />
+              <FaTimes style={{ marginRight: "0.5rem" }} />
               Cancelar
             </>
           ) : (
             <>
-              <FaPlus style={{ marginRight: '0.5rem' }} />
+              <FaPlus style={{ marginRight: "0.5rem" }} />
               Nuevo Vehículo
             </>
           )}
         </button>
       </div>
 
-      <div style={{ marginBottom: '1rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+      {/* Filtro por estado */}
+      <div
+        style={{
+          marginBottom: "1rem",
+          display: "flex",
+          gap: "1rem",
+          alignItems: "center",
+        }}
+      >
         <label>Filtrar por estado:</label>
         <select
           value={filtroEstado}
           onChange={(e) => setFiltroEstado(e.target.value)}
-          style={{ padding: '0.5rem', borderRadius: '6px', border: '1px solid #ced4da' }}
+          style={{
+            padding: "0.5rem",
+            borderRadius: "6px",
+            border: "1px solid #ced4da",
+          }}
         >
           <option value="">Todos</option>
           <option value="DISPONIBLE">Disponible</option>
@@ -246,16 +263,22 @@ function Vehiculos() {
         </select>
       </div>
 
+      {/* Formulario */}
       {showForm && (
-        <div className="form-container" style={{ marginBottom: '2rem' }}>
-          <h3>{editingId ? 'Editar Vehículo' : 'Nuevo Vehículo'}</h3>
+        <div className="form-container" style={{ marginBottom: "2rem" }}>
+          <h3>{editingId ? "Editar Vehículo" : "Nuevo Vehículo"}</h3>
           {error && <div className="error">{error}</div>}
+
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label>Modelo<span className="required-asterisk"> *</span></label>
+              <label>
+                Modelo<span className="required-asterisk"> *</span>
+              </label>
               <select
                 value={formData.id_modelo}
-                onChange={(e) => setFormData({ ...formData, id_modelo: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, id_modelo: e.target.value })
+                }
                 required
               >
                 <option value="">Seleccione un modelo</option>
@@ -269,21 +292,29 @@ function Vehiculos() {
 
             <div className="form-row">
               <div className="form-group">
-                <label>Año<span className="required-asterisk"> *</span></label>
+                <label>
+                  Año<span className="required-asterisk"> *</span>
+                </label>
                 <input
                   type="number"
                   value={formData.anio}
-                  onChange={(e) => setFormData({ ...formData, anio: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, anio: e.target.value })
+                  }
                   required
                   min="1900"
                   max="2100"
                 />
               </div>
               <div className="form-group">
-                <label>Tipo<span className="required-asterisk"> *</span></label>
+                <label>
+                  Tipo<span className="required-asterisk"> *</span>
+                </label>
                 <select
                   value={formData.tipo}
-                  onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, tipo: e.target.value })
+                  }
                   required
                 >
                   <option value="">Seleccione tipo</option>
@@ -303,52 +334,101 @@ function Vehiculos() {
 
             <div className="form-row">
               <div className="form-group">
-                <label>Patente<span className="required-asterisk"> *</span> <span style={{ fontSize: '12px', fontWeight: 'normal', color: 'var(--gray-500)' }}>(Argentina)</span></label>
+                <label>
+                  Patente<span className="required-asterisk"> *</span>{" "}
+                  <span
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: "normal",
+                      color: "var(--gray-500)",
+                    }}
+                  >
+                    (Argentina)
+                  </span>
+                </label>
                 <input
                   type="text"
                   value={formData.patente}
                   onChange={handlePatenteChange}
                   required
-                  maxLength="7"
+                  maxLength={7}
                   placeholder="ABC123 o AB123CD"
-                  style={{ 
-                    borderColor: patenteError ? 'var(--danger)' : undefined,
-                    textTransform: 'uppercase'
+                  style={{
+                    borderColor: patenteError ? "var(--danger)" : undefined,
+                    textTransform: "uppercase",
                   }}
                 />
                 {patenteError && (
-                  <small style={{ color: 'var(--danger)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                  <small
+                    style={{
+                      color: "var(--danger)",
+                      fontSize: "12px",
+                      marginTop: "4px",
+                      display: "block",
+                    }}
+                  >
                     {patenteError}
                   </small>
                 )}
                 {formData.patente && !patenteError && (
-                  <small style={{ color: 'var(--success)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                  <small
+                    style={{
+                      color: "var(--success)",
+                      fontSize: "12px",
+                      marginTop: "4px",
+                      display: "block",
+                    }}
+                  >
                     ✓ Formato válido
                   </small>
                 )}
               </div>
+
               <div className="form-group">
-                <label>Costo Diario<span className="required-asterisk"> *</span> <span style={{ fontSize: '12px', fontWeight: 'normal', color: 'var(--gray-500)' }}>(ARS $)</span></label>
-                <div style={{ position: 'relative' }}>
-                  <span style={{
-                    position: 'absolute',
-                    left: '12px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: 'var(--gray-500)',
-                    fontWeight: '500'
-                  }}>$</span>
+                <label>
+                  Costo Diario
+                  <span className="required-asterisk"> *</span>{" "}
+                  <span
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: "normal",
+                      color: "var(--gray-500)",
+                    }}
+                  >
+                    (ARS $)
+                  </span>
+                </label>
+                <div style={{ position: "relative" }}>
+                  <span
+                    style={{
+                      position: "absolute",
+                      left: "12px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      color: "var(--gray-500)",
+                      fontWeight: "500",
+                    }}
+                  >
+                    $
+                  </span>
                   <input
                     type="text"
                     value={formData.costo_diario}
                     onChange={handleCostoChange}
                     required
                     placeholder="0,00"
-                    style={{ paddingLeft: '32px' }}
+                    style={{ paddingLeft: "32px" }}
                   />
                 </div>
                 {formData.costo_diario && (
-                  <small style={{ color: 'var(--gray-500)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                  <small
+                    style={{
+                      color: "var(--gray-500)",
+                      fontSize: "12px",
+                      marginTop: "4px",
+                      display: "block",
+                    }}
+                  >
                     {formatCostoDisplay(formData.costo_diario)} ARS
                   </small>
                 )}
@@ -356,19 +436,27 @@ function Vehiculos() {
             </div>
 
             <div className="form-actions">
-              <button type="button" className="btn btn-secondary" onClick={resetForm}>
-                <FaTimes style={{ marginRight: '0.5rem' }} />
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={resetForm}
+              >
+                <FaTimes style={{ marginRight: "0.5rem" }} />
                 Cancelar
               </button>
-              <button type="submit" className="btn btn-primary" disabled={!!patenteError}>
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={!!patenteError}
+              >
                 {editingId ? (
                   <>
-                    <FaSave style={{ marginRight: '0.5rem' }} />
+                    <FaSave style={{ marginRight: "0.5rem" }} />
                     Actualizar
                   </>
                 ) : (
                   <>
-                    <FaPlus style={{ marginRight: '0.5rem' }} />
+                    <FaPlus style={{ marginRight: "0.5rem" }} />
                     Crear
                   </>
                 )}
@@ -378,113 +466,109 @@ function Vehiculos() {
         </div>
       )}
 
+      {/* Tabla */}
       <div className="table-container">
         {vehiculos.length === 0 ? (
           <div className="empty-state">
             <p>No hay vehículos registrados</p>
           </div>
         ) : (
-          <>
-            <div className="table-header-wrapper">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Patente</th>
-                    <th>Modelo</th>
-                    <th>Año</th>
-                    <th>Tipo</th>
-                    <th>Estado</th>
-                    <th>Costo Diario</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-              </table>
-            </div>
-            <div className="table-body-wrapper">
-              <table className="table">
-                <tbody>
-                  {vehiculos.map((vehiculo) => {
-                if (!vehiculo || !vehiculo.id) return null
-                
-                const modeloNombre = vehiculo.modelo 
-                  ? `${vehiculo.modelo.marca?.nombre || ''} ${vehiculo.modelo.nombre || ''}`.trim()
-                  : 'Sin modelo'
-                
-                const costoDiario = vehiculo.costo_diario !== null && vehiculo.costo_diario !== undefined
-                  ? vehiculo.costo_diario
-                  : 0
-                
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Patente</th>
+                <th>Modelo</th>
+                <th>Año</th>
+                <th>Tipo</th>
+                <th>Estado</th>
+                <th>Costo Diario</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {vehiculos.map((vehiculo) => {
+                if (!vehiculo || !vehiculo.id) return null;
+
+                const modeloNombre = vehiculo.modelo
+                  ? `${vehiculo.modelo.marca?.nombre || ""} ${
+                      vehiculo.modelo.nombre || ""
+                    }`.trim()
+                  : "Sin modelo";
+
+                const costoDiario =
+                  vehiculo.costo_diario !== null &&
+                  vehiculo.costo_diario !== undefined
+                    ? vehiculo.costo_diario
+                    : 0;
+
                 return (
                   <tr key={vehiculo.id}>
-                    <td>{vehiculo.patente || '-'}</td>
+                    <td>{vehiculo.patente || "-"}</td>
                     <td>{modeloNombre}</td>
-                    <td>{vehiculo.anio || '-'}</td>
-                    <td>{vehiculo.tipo || '-'}</td>
+                    <td>{vehiculo.anio || "-"}</td>
+                    <td>{vehiculo.tipo || "-"}</td>
                     <td>
-                      <span style={{
-                        padding: '0.3rem 0.6rem',
-                        borderRadius: '4px',
-                        fontSize: '0.85rem',
-                        backgroundColor: vehiculo.estado === 'DISPONIBLE' ? '#d4edda' : 
-                                        vehiculo.estado === 'ALQUILADO' ? '#fff3cd' : '#f8d7da',
-                        color: vehiculo.estado === 'DISPONIBLE' ? '#155724' : 
-                              vehiculo.estado === 'ALQUILADO' ? '#856404' : '#721c24'
-                      }}>
-                        {vehiculo.estado || '-'}
+                      <span
+                        style={{
+                          padding: "0.3rem 0.6rem",
+                          borderRadius: "4px",
+                          fontSize: "0.85rem",
+                          backgroundColor:
+                            vehiculo.estado === "DISPONIBLE"
+                              ? "#d4edda"
+                              : vehiculo.estado === "ALQUILADO"
+                              ? "#fff3cd"
+                              : "#f8d7da",
+                          color:
+                            vehiculo.estado === "DISPONIBLE"
+                              ? "#155724"
+                              : vehiculo.estado === "ALQUILADO"
+                              ? "#856404"
+                              : "#721c24",
+                        }}
+                      >
+                        {vehiculo.estado || "-"}
                       </span>
                     </td>
                     <td>
-                      <strong style={{ color: 'var(--brand-primary)' }}>
-                        ${typeof costoDiario === 'number' 
-                          ? costoDiario.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                          : '0,00'} ARS
+                      <strong style={{ color: "var(--brand-primary)" }}>
+                        {typeof costoDiario === "number"
+                          ? `$${costoDiario.toLocaleString("es-AR", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })} ARS`
+                          : "0,00"}
                       </strong>
                     </td>
                     <td>
                       <div className="actions">
                         <button
                           className="btn btn-secondary btn-small"
-                          onClick={() => {
-                            try {
-                              handleEdit(vehiculo)
-                            } catch (err) {
-                              console.error('Error al hacer clic en editar:', err)
-                              setError('Error al abrir el formulario de edición')
-                            }
-                          }}
+                          onClick={() => handleEdit(vehiculo)}
                           title="Editar vehículo"
                         >
-                          <FaEdit style={{ marginRight: '0.3rem' }} />
+                          <FaEdit style={{ marginRight: "0.3rem" }} />
                           Editar
                         </button>
                         <button
                           className="btn btn-danger btn-small"
-                          onClick={() => {
-                            try {
-                              handleDelete(vehiculo.id)
-                            } catch (err) {
-                              console.error('Error al eliminar:', err)
-                              setError('Error al eliminar el vehículo')
-                            }
-                          }}
+                          onClick={() => handleDelete(vehiculo.id)}
                           title="Eliminar vehículo"
                         >
-                          <FaTrash style={{ marginRight: '0.3rem' }} />
+                          <FaTrash style={{ marginRight: "0.3rem" }} />
                           Eliminar
                         </button>
                       </div>
                     </td>
                   </tr>
-                )
+                );
               })}
-                </tbody>
-              </table>
-            </div>
-          </>
+            </tbody>
+          </table>
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export default Vehiculos
+export default Vehiculos;

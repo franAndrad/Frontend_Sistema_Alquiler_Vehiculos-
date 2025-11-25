@@ -1,142 +1,170 @@
-import { useState, useEffect } from 'react'
-import { reservaAPI, clienteAPI, vehiculoAPI } from '../services/api'
-import { syncTableColumns } from '../utils/tableSync'
-import '../components/Table.css'
-import '../components/Form.css'
+import { useState, useEffect } from "react";
+import { FaEdit, FaTrash } from "react-icons/fa";
+import { reservaAPI, clienteAPI, vehiculoAPI } from "../services/api";
+import { formatearFechaLegible } from "../utils/dateFormatter";
+import "../components/Table.css";
+import "../components/Form.css";
 
 function Reservas() {
-  const [reservas, setReservas] = useState([])
-  const [clientes, setClientes] = useState([])
-  const [vehiculos, setVehiculos] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [showForm, setShowForm] = useState(false)
-  const [editingId, setEditingId] = useState(null)
+  const [reservas, setReservas] = useState([]);
+  const [clientes, setClientes] = useState([]);
+  const [vehiculos, setVehiculos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
-    id_cliente: '',
-    id_vehiculo: '',
-    fecha_inicio: '',
-    fecha_fin: '',
-  })
+    id_cliente: "",
+    id_vehiculo: "",
+    fecha_inicio: "",
+    fecha_fin: "",
+  });
 
   useEffect(() => {
-    cargarReservas()
-    cargarClientes()
-    cargarVehiculos()
-  }, [])
-
-  useEffect(() => {
-    if (reservas.length > 0) {
-      setTimeout(() => syncTableColumns(), 100)
-    }
-  }, [reservas])
+    cargarReservas();
+    cargarClientes();
+    cargarVehiculos();
+  }, []);
 
   const cargarReservas = async () => {
     try {
-      setLoading(true)
-      const data = await reservaAPI.listar()
-      setReservas(data)
-      setError(null)
+      setLoading(true);
+      const data = await reservaAPI.listar();
+      setReservas(data);
+      setError(null);
     } catch (err) {
-      setError(err.message)
+      setError(err.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const cargarClientes = async () => {
     try {
-      const data = await clienteAPI.listar()
-      setClientes(data)
+      const data = await clienteAPI.listar();
+      setClientes(data);
     } catch (err) {
-      console.error('Error cargando clientes:', err)
+      console.error("Error cargando clientes:", err);
     }
-  }
+  };
 
   const cargarVehiculos = async () => {
     try {
-      const data = await vehiculoAPI.listar()
-      setVehiculos(data)
+      const data = await vehiculoAPI.listar();
+      setVehiculos(data);
     } catch (err) {
-      console.error('Error cargando vehículos:', err)
+      console.error("Error cargando vehículos:", err);
     }
-  }
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
+    setError(null);
+
     try {
       const data = {
-        id_cliente: parseInt(formData.id_cliente),
-        id_vehiculo: parseInt(formData.id_vehiculo),
+        id_cliente: parseInt(formData.id_cliente, 10),
+        id_vehiculo: parseInt(formData.id_vehiculo, 10),
         fecha_inicio: formData.fecha_inicio,
         fecha_fin: formData.fecha_fin,
-      }
+      };
+
       if (editingId) {
-        await reservaAPI.actualizar(editingId, data)
+        await reservaAPI.actualizar(editingId, data);
       } else {
-        await reservaAPI.crear(data)
+        await reservaAPI.crear(data);
       }
-      cargarReservas()
-      resetForm()
+
+      await cargarReservas();
+      resetForm();
     } catch (err) {
-      setError(err.message)
+      setError(err.message);
     }
-  }
+  };
 
   const handleEdit = (reserva) => {
-    setEditingId(reserva.id)
+    setEditingId(reserva.id);
     setFormData({
-      id_cliente: reserva.cliente?.id || '',
-      id_vehiculo: reserva.vehiculo?.id || '',
-      fecha_inicio: reserva.fecha_inicio || '',
-      fecha_fin: reserva.fecha_fin || '',
-    })
-    setShowForm(true)
-  }
+      id_cliente: reserva.cliente?.id || "",
+      id_vehiculo: reserva.vehiculo?.id || "",
+      fecha_inicio: reserva.fecha_inicio || "",
+      fecha_fin: reserva.fecha_fin || "",
+    });
+    setShowForm(true);
+  };
 
   const handleCancelar = async (id) => {
-    if (window.confirm('¿Está seguro de cancelar esta reserva?')) {
-      try {
-        await reservaAPI.cancelar(id)
-        cargarReservas()
-      } catch (err) {
-        setError(err.message)
-      }
+    if (!window.confirm("¿Está seguro de cancelar esta reserva?")) return;
+
+    try {
+      await reservaAPI.cancelar(id);
+      await cargarReservas();
+    } catch (err) {
+      setError(err.message);
     }
-  }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("¿Está seguro de eliminar esta reserva?")) return;
+
+    try {
+      await reservaAPI.eliminar(id);
+      await cargarReservas();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
   const resetForm = () => {
     setFormData({
-      id_cliente: '',
-      id_vehiculo: '',
-      fecha_inicio: '',
-      fecha_fin: '',
-    })
-    setEditingId(null)
-    setShowForm(false)
-  }
+      id_cliente: "",
+      id_vehiculo: "",
+      fecha_inicio: "",
+      fecha_fin: "",
+    });
+    setEditingId(null);
+    setShowForm(false);
+    setError(null);
+  };
 
-  if (loading) return <div className="loading">Cargando reservas...</div>
+  if (loading) return <div className="loading">Cargando reservas...</div>;
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+      {/* Header */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "1.5rem",
+        }}
+      >
         <h2>Reservas</h2>
-        <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
-          {showForm ? 'Cancelar' : '+ Nueva Reserva'}
+        <button
+          className="btn btn-primary"
+          onClick={() => setShowForm(!showForm)}
+        >
+          {showForm ? "Cancelar" : "+ Nueva Reserva"}
         </button>
       </div>
 
+      {/* Formulario */}
       {showForm && (
-        <div className="form-container" style={{ marginBottom: '2rem' }}>
-          <h3>{editingId ? 'Editar Reserva' : 'Nueva Reserva'}</h3>
+        <div className="form-container" style={{ marginBottom: "2rem" }}>
+          <h3>{editingId ? "Editar Reserva" : "Nueva Reserva"}</h3>
           {error && <div className="error">{error}</div>}
+
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label>Cliente *</label>
+              <label>
+                Cliente <span className="required-asterisk">*</span>
+              </label>
               <select
                 value={formData.id_cliente}
-                onChange={(e) => setFormData({ ...formData, id_cliente: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, id_cliente: e.target.value })
+                }
                 required
               >
                 <option value="">Seleccione un cliente</option>
@@ -149,16 +177,21 @@ function Reservas() {
             </div>
 
             <div className="form-group">
-              <label>Vehículo *</label>
+              <label>
+                Vehículo <span className="required-asterisk">*</span>
+              </label>
               <select
                 value={formData.id_vehiculo}
-                onChange={(e) => setFormData({ ...formData, id_vehiculo: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, id_vehiculo: e.target.value })
+                }
                 required
               >
                 <option value="">Seleccione un vehículo</option>
                 {vehiculos.map((vehiculo) => (
                   <option key={vehiculo.id} value={vehiculo.id}>
-                    {vehiculo.patente} - {vehiculo.modelo?.marca?.nombre} {vehiculo.modelo?.nombre}
+                    {vehiculo.patente} - {vehiculo.modelo?.marca?.nombre}{" "}
+                    {vehiculo.modelo?.nombre}
                   </option>
                 ))}
               </select>
@@ -166,109 +199,112 @@ function Reservas() {
 
             <div className="form-row">
               <div className="form-group">
-                <label>Fecha Inicio *</label>
+                <label>
+                  Fecha Inicio <span className="required-asterisk">*</span>
+                </label>
                 <input
                   type="date"
                   value={formData.fecha_inicio}
-                  onChange={(e) => setFormData({ ...formData, fecha_inicio: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, fecha_inicio: e.target.value })
+                  }
                   required
                 />
               </div>
               <div className="form-group">
-                <label>Fecha Fin *</label>
+                <label>
+                  Fecha Fin <span className="required-asterisk">*</span>
+                </label>
                 <input
                   type="date"
                   value={formData.fecha_fin}
-                  onChange={(e) => setFormData({ ...formData, fecha_fin: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, fecha_fin: e.target.value })
+                  }
                   required
                 />
               </div>
             </div>
 
             <div className="form-actions">
-              <button type="button" className="btn btn-secondary" onClick={resetForm}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={resetForm}
+              >
                 Cancelar
               </button>
               <button type="submit" className="btn btn-primary">
-                {editingId ? 'Actualizar' : 'Crear'}
+                {editingId ? "Actualizar" : "Crear"}
               </button>
             </div>
           </form>
         </div>
       )}
 
+      {/* Tabla */}
       <div className="table-container">
         {reservas.length === 0 ? (
           <div className="empty-state">
             <p>No hay reservas registradas</p>
           </div>
         ) : (
-          <>
-            <div className="table-header-wrapper">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Cliente</th>
-                    <th>Vehículo</th>
-                    <th>Fecha Inicio</th>
-                    <th>Fecha Fin</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-              </table>
-            </div>
-            <div className="table-body-wrapper">
-              <table className="table">
-                <tbody>
-                  {reservas.map((reserva) => (
-                    <tr key={reserva.id}>
-                      <td>{reserva.cliente?.nombre} {reserva.cliente?.apellido}</td>
-                      <td>{reserva.vehiculo?.patente}</td>
-                      <td>{reserva.fecha_inicio}</td>
-                      <td>{reserva.fecha_fin}</td>
-                      <td>
-                        <span style={{
-                          padding: '0.3rem 0.6rem',
-                          borderRadius: '4px',
-                          fontSize: '0.85rem',
-                          backgroundColor: reserva.estado === 'PENDIENTE' ? '#fff3cd' : 
-                                          reserva.estado === 'CONFIRMADA' ? '#d4edda' : '#f8d7da',
-                          color: reserva.estado === 'PENDIENTE' ? '#856404' : 
-                                reserva.estado === 'CONFIRMADA' ? '#155724' : '#721c24'
-                        }}>
-                          {reserva.estado}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="actions">
-                          {reserva.estado !== 'CANCELADA' && (
-                            <button
-                              className="btn btn-warning btn-small"
-                              onClick={() => handleCancelar(reserva.id)}
-                            >
-                              Cancelar
-                            </button>
-                          )}
-                          <button
-                            className="btn btn-secondary btn-small"
-                            onClick={() => handleEdit(reserva)}
-                          >
-                            Editar
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Vehículo</th>
+                <th>Fecha Reserva</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reservas.map((reserva) => (
+                <tr key={reserva.id}>
+                  <td>
+                    {reserva.cliente?.nombre} {reserva.cliente?.apellido}
+                  </td>
+                  <td>{reserva.vehiculo?.patente}</td>
+                  <td>{formatearFechaLegible(reserva.fecha_reserva)}</td>
+                  <td>{reserva.estado}</td>
+                  <td>
+                    <div className="actions">
+                      {reserva.estado !== "Cancelada" && (
+                        <button
+                          className="btn btn-warning btn-small"
+                          onClick={() => handleCancelar(reserva.id)}
+                          title="Cancelar reserva"
+                        >
+                          Cancelar
+                        </button>
+                      )}
+                      <button
+                        className="btn btn-secondary btn-small"
+                        onClick={() => handleEdit(reserva)}
+                        title="Editar reserva"
+                      >
+                        <FaEdit style={{ marginRight: "0.3rem" }} />
+                        Editar
+                      </button>
+                      <button
+                        className="btn btn-danger btn-small"
+                        onClick={() => handleDelete(reserva.id)}
+                        title="Eliminar reserva"
+                      >
+                        <FaTrash style={{ marginRight: "0.3rem" }} />
+                        Eliminar
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export default Reservas
-
+export default Reservas;

@@ -1,172 +1,179 @@
-import { useState, useEffect } from 'react'
-import { marcaAPI } from '../services/api'
-import { syncTableColumns } from '../utils/tableSync'
-import '../components/Table.css'
-import '../components/Form.css'
+import { useState, useEffect } from "react";
+import { marcaAPI } from "../services/api";
+import "../components/Table.css";
+import "../components/Form.css";
 
 function Marcas() {
-  const [marcas, setMarcas] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [showForm, setShowForm] = useState(false)
-  const [editingId, setEditingId] = useState(null)
+  const [marcas, setMarcas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
-    nombre: '',
-  })
+    nombre: "",
+  });
 
   useEffect(() => {
-    cargarMarcas()
-  }, [])
-
-  useEffect(() => {
-    if (marcas.length > 0) {
-      setTimeout(() => syncTableColumns(), 100)
-    }
-  }, [marcas])
+    cargarMarcas();
+  }, []);
 
   const cargarMarcas = async () => {
     try {
-      setLoading(true)
-      const data = await marcaAPI.listar()
-      setMarcas(data)
-      setError(null)
+      setLoading(true);
+      const data = await marcaAPI.listar();
+      setMarcas(data);
+      setError(null);
     } catch (err) {
-      setError(err.message)
+      setError(err.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
+    setError(null);
+
     try {
       if (editingId) {
-        await marcaAPI.actualizar(editingId, formData)
+        await marcaAPI.actualizar(editingId, formData);
       } else {
-        await marcaAPI.crear(formData)
+        await marcaAPI.crear(formData);
       }
-      cargarMarcas()
-      resetForm()
+      cargarMarcas();
+      resetForm();
     } catch (err) {
-      setError(err.message)
+      setError(err.message);
     }
-  }
+  };
 
   const handleEdit = (marca) => {
-    setEditingId(marca.id)
+    setEditingId(marca.id);
     setFormData({
-      nombre: marca.nombre || '',
-    })
-    setShowForm(true)
-  }
+      nombre: marca.nombre || "",
+    });
+    setShowForm(true);
+  };
 
   const handleDelete = async (id) => {
-    if (window.confirm('¿Está seguro de eliminar esta marca?')) {
-      try {
-        await marcaAPI.eliminar(id)
-        cargarMarcas()
-      } catch (err) {
-        setError(err.message)
-      }
+    if (!window.confirm("¿Está seguro de eliminar esta marca?")) return;
+
+    try {
+      await marcaAPI.eliminar(id);
+      cargarMarcas();
+    } catch (err) {
+      setError(err.message);
     }
-  }
+  };
 
   const resetForm = () => {
-    setFormData({
-      nombre: '',
-    })
-    setEditingId(null)
-    setShowForm(false)
-  }
+    setFormData({ nombre: "" });
+    setEditingId(null);
+    setShowForm(false);
+    setError(null);
+  };
 
-  if (loading) return <div className="loading">Cargando marcas...</div>
+  if (loading) return <div className="loading">Cargando marcas...</div>;
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+      {/* Header */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "1.5rem",
+        }}
+      >
         <h2>Marcas</h2>
-        <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
-          {showForm ? 'Cancelar' : '+ Nueva Marca'}
+        <button
+          className="btn btn-primary"
+          onClick={() => setShowForm(!showForm)}
+        >
+          {showForm ? "Cancelar" : "+ Nueva Marca"}
         </button>
       </div>
 
+      {/* Formulario */}
       {showForm && (
-        <div className="form-container" style={{ marginBottom: '2rem' }}>
+        <div className="form-container" style={{ marginBottom: "2rem" }}>
           {error && <div className="error">{error}</div>}
-          <h3>{editingId ? 'Editar Marca' : 'Nueva Marca'}</h3>
+
+          <h3>{editingId ? "Editar Marca" : "Nueva Marca"}</h3>
+
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label>Nombre *</label>
               <input
                 type="text"
                 value={formData.nombre}
-                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, nombre: e.target.value })
+                }
                 required
               />
             </div>
 
             <div className="form-actions">
-              <button type="button" className="btn btn-secondary" onClick={resetForm}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={resetForm}
+              >
                 Cancelar
               </button>
               <button type="submit" className="btn btn-primary">
-                {editingId ? 'Actualizar' : 'Crear'}
+                {editingId ? "Actualizar" : "Crear"}
               </button>
             </div>
           </form>
         </div>
       )}
 
+      {/* Tabla */}
       <div className="table-container">
         {marcas.length === 0 ? (
           <div className="empty-state">
             <p>No hay marcas registradas</p>
           </div>
         ) : (
-          <>
-            <div className="table-header-wrapper">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Nombre</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-              </table>
-            </div>
-            <div className="table-body-wrapper">
-              <table className="table">
-                <tbody>
-                  {marcas.map((marca) => (
-                    <tr key={marca.id}>
-                      <td>{marca.nombre}</td>
-                      <td>
-                        <div className="actions">
-                          <button
-                            className="btn btn-secondary btn-small"
-                            onClick={() => handleEdit(marca)}
-                          >
-                            Editar
-                          </button>
-                          <button
-                            className="btn btn-danger btn-small"
-                            onClick={() => handleDelete(marca.id)}
-                          >
-                            Eliminar
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {marcas.map((marca) => (
+                <tr key={marca.id}>
+                  <td>{marca.nombre}</td>
+                  <td>
+                    <div className="actions">
+                      <button
+                        className="btn btn-secondary btn-small"
+                        onClick={() => handleEdit(marca)}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        className="btn btn-danger btn-small"
+                        onClick={() => handleDelete(marca.id)}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export default Marcas
-
+export default Marcas;

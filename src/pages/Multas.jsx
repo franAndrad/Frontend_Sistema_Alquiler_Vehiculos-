@@ -1,137 +1,154 @@
-import { useState, useEffect } from 'react'
-import { multaAPI, alquilerAPI } from '../services/api'
-import { syncTableColumns } from '../utils/tableSync'
-import '../components/Table.css'
-import '../components/Form.css'
+import { useState, useEffect } from "react";
+import { FaEdit, FaTrash } from "react-icons/fa";
+import { multaAPI, alquilerAPI } from "../services/api";
+import "../components/Table.css";
+import "../components/Form.css";
 
 function Multas() {
-  const [multas, setMultas] = useState([])
-  const [alquileres, setAlquileres] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [showForm, setShowForm] = useState(false)
-  const [editingId, setEditingId] = useState(null)
+  const [multas, setMultas] = useState([]);
+  const [alquileres, setAlquileres] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
-    id_alquiler: '',
-    descripcion: '',
-    monto: '',
-    fecha: '',
-  })
+    id_alquiler: "",
+    descripcion: "",
+    monto: "",
+    fecha: "",
+  });
 
   useEffect(() => {
-    cargarMultas()
-    cargarAlquileres()
-  }, [])
-
-  useEffect(() => {
-    if (multas.length > 0) {
-      setTimeout(() => syncTableColumns(), 100)
-    }
-  }, [multas])
+    cargarMultas();
+    cargarAlquileres();
+  }, []);
 
   const cargarMultas = async () => {
     try {
-      setLoading(true)
-      const data = await multaAPI.listar()
-      setMultas(data)
-      setError(null)
+      setLoading(true);
+      const data = await multaAPI.listar();
+      setMultas(data);
+      setError(null);
     } catch (err) {
-      setError(err.message)
+      setError(err.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const cargarAlquileres = async () => {
     try {
-      const data = await alquilerAPI.listar()
-      setAlquileres(data)
+      const data = await alquilerAPI.listar();
+      setAlquileres(data);
     } catch (err) {
-      console.error('Error cargando alquileres:', err)
+      console.error("Error cargando alquileres:", err);
     }
-  }
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
+    setError(null);
+
     try {
       const data = {
-        id_alquiler: parseInt(formData.id_alquiler),
+        id_alquiler: parseInt(formData.id_alquiler, 10),
         descripcion: formData.descripcion,
         monto: parseFloat(formData.monto),
         fecha: formData.fecha,
-      }
+      };
+
       if (editingId) {
-        await multaAPI.actualizar(editingId, data)
+        await multaAPI.actualizar(editingId, data);
       } else {
-        await multaAPI.crear(data)
+        await multaAPI.crear(data);
       }
-      cargarMultas()
-      resetForm()
+
+      await cargarMultas();
+      resetForm();
     } catch (err) {
-      setError(err.message)
+      setError(err.message);
     }
-  }
+  };
 
   const handleEdit = (multa) => {
-    setEditingId(multa.id)
+    setEditingId(multa.id);
     setFormData({
-      id_alquiler: multa.id_alquiler || '',
-      descripcion: multa.descripcion || '',
-      monto: multa.monto || '',
-      fecha: multa.fecha || '',
-    })
-    setShowForm(true)
-  }
+      id_alquiler: multa.alquiler?.id || "",
+      descripcion: multa.descripcion || "",
+      monto: multa.monto || "",
+      fecha: multa.fecha || "",
+    });
+    setShowForm(true);
+  };
 
   const handleDelete = async (id) => {
-    if (window.confirm('¿Está seguro de eliminar esta multa?')) {
-      try {
-        await multaAPI.eliminar(id)
-        cargarMultas()
-      } catch (err) {
-        setError(err.message)
-      }
+    if (!window.confirm("¿Está seguro de eliminar esta multa?")) return;
+
+    try {
+      await multaAPI.eliminar(id);
+      await cargarMultas();
+    } catch (err) {
+      setError(err.message);
     }
-  }
+  };
 
   const resetForm = () => {
     setFormData({
-      id_alquiler: '',
-      descripcion: '',
-      monto: '',
-      fecha: '',
-    })
-    setEditingId(null)
-    setShowForm(false)
-  }
+      id_alquiler: "",
+      descripcion: "",
+      monto: "",
+      fecha: "",
+    });
+    setEditingId(null);
+    setShowForm(false);
+    setError(null);
+  };
 
-  if (loading) return <div className="loading">Cargando multas...</div>
+  if (loading) return <div className="loading">Cargando multas...</div>;
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <h2>Multas</h2>
-        <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
-          {showForm ? 'Cancelar' : '+ Nueva Multa'}
+      {/* Header */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "24px",
+        }}
+      >
+        <h2 style={{ margin: 0 }}>Multas</h2>
+        <button
+          className="btn btn-primary"
+          onClick={() => setShowForm(!showForm)}
+        >
+          {showForm ? "Cancelar" : "+ Nueva Multa"}
         </button>
       </div>
 
+      {/* Formulario */}
       {showForm && (
-        <div className="form-container" style={{ marginBottom: '2rem' }}>
-          <h3>{editingId ? 'Editar Multa' : 'Nueva Multa'}</h3>
+        <div className="form-container" style={{ marginBottom: "2rem" }}>
+          <h3>{editingId ? "Editar Multa" : "Nueva Multa"}</h3>
           {error && <div className="error">{error}</div>}
+
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label>Alquiler *</label>
+              <label>
+                Alquiler <span className="required-asterisk">*</span>
+              </label>
               <select
                 value={formData.id_alquiler}
-                onChange={(e) => setFormData({ ...formData, id_alquiler: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, id_alquiler: e.target.value })
+                }
                 required
               >
                 <option value="">Seleccione un alquiler</option>
-                {alquileres.map((alquiler) => (
-                  <option key={alquiler.id} value={alquiler.id}>
-                    ID: {alquiler.id} - Cliente: {alquiler.cliente?.nombre} {alquiler.cliente?.apellido} - Vehículo: {alquiler.vehiculo?.patente}
+                {alquileres.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    ID {a.id} — {a.cliente?.nombre} {a.cliente?.apellido} —{" "}
+                    {a.vehiculo?.patente}
                   </option>
                 ))}
               </select>
@@ -141,7 +158,9 @@ function Multas() {
               <label>Descripción *</label>
               <textarea
                 value={formData.descripcion}
-                onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, descripcion: e.target.value })
+                }
                 required
               />
             </div>
@@ -152,91 +171,97 @@ function Multas() {
                 <input
                   type="number"
                   step="0.01"
-                  value={formData.monto}
-                  onChange={(e) => setFormData({ ...formData, monto: e.target.value })}
-                  required
                   min="0"
+                  value={formData.monto}
+                  onChange={(e) =>
+                    setFormData({ ...formData, monto: e.target.value })
+                  }
+                  required
                 />
               </div>
+
               <div className="form-group">
                 <label>Fecha *</label>
                 <input
                   type="date"
                   value={formData.fecha}
-                  onChange={(e) => setFormData({ ...formData, fecha: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, fecha: e.target.value })
+                  }
                   required
                 />
               </div>
             </div>
 
             <div className="form-actions">
-              <button type="button" className="btn btn-secondary" onClick={resetForm}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={resetForm}
+              >
                 Cancelar
               </button>
               <button type="submit" className="btn btn-primary">
-                {editingId ? 'Actualizar' : 'Crear'}
+                {editingId ? "Actualizar" : "Crear"}
               </button>
             </div>
           </form>
         </div>
       )}
 
+      {/* Tabla */}
       <div className="table-container">
         {multas.length === 0 ? (
           <div className="empty-state">
             <p>No hay multas registradas</p>
           </div>
         ) : (
-          <>
-            <div className="table-header-wrapper">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>ID Alquiler</th>
-                    <th>Descripción</th>
-                    <th>Monto</th>
-                    <th>Fecha</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-              </table>
-            </div>
-            <div className="table-body-wrapper">
-              <table className="table">
-                <tbody>
-                  {multas.map((multa) => (
-                    <tr key={multa.id}>
-                      <td>{multa.id_alquiler}</td>
-                      <td>{multa.descripcion}</td>
-                      <td>${multa.monto?.toLocaleString()}</td>
-                      <td>{multa.fecha}</td>
-                      <td>
-                        <div className="actions">
-                          <button
-                            className="btn btn-secondary btn-small"
-                            onClick={() => handleEdit(multa)}
-                          >
-                            Editar
-                          </button>
-                          <button
-                            className="btn btn-danger btn-small"
-                            onClick={() => handleDelete(multa.id)}
-                          >
-                            Eliminar
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Vehículo</th>
+                <th>Fecha</th>
+                <th>Monto</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {multas.map((m) => (
+                <tr key={m.id}>
+                  <td>
+                    {m.alquiler?.cliente?.nombre}{" "}
+                    {m.alquiler?.cliente?.apellido}
+                  </td>
+                  <td>{m.alquiler?.vehiculo?.patente || "-"}</td>
+                  <td>{m.fecha}</td>
+                  <td>${m.monto}</td>
+                  <td>
+                    <div className="actions">
+                      <button
+                        className="btn btn-secondary btn-small"
+                        onClick={() => handleEdit(m)}
+                      >
+                        <FaEdit style={{ marginRight: "0.3rem" }} />
+                        Editar
+                      </button>
+                      <button
+                        className="btn btn-danger btn-small"
+                        onClick={() => handleDelete(m.id)}
+                      >
+                        <FaTrash style={{ marginRight: "0.3rem" }} />
+                        Eliminar
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export default Multas
-
+export default Multas;

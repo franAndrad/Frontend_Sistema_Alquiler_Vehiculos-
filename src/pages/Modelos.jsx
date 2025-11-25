@@ -1,126 +1,139 @@
-import { useState, useEffect } from 'react'
-import { modeloAPI, marcaAPI } from '../services/api'
-import { syncTableColumns } from '../utils/tableSync'
-import '../components/Table.css'
-import '../components/Form.css'
+import { useState, useEffect } from "react";
+import { FaEdit, FaTrash } from "react-icons/fa";
+import { modeloAPI, marcaAPI } from "../services/api";
+import "../components/Table.css";
+import "../components/Form.css";
 
 function Modelos() {
-  const [modelos, setModelos] = useState([])
-  const [marcas, setMarcas] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [showForm, setShowForm] = useState(false)
-  const [editingId, setEditingId] = useState(null)
+  const [modelos, setModelos] = useState([]);
+  const [marcas, setMarcas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
-    id_marca: '',
-    nombre: '',
-    descripcion: '',
-  })
+    id_marca: "",
+    nombre: "",
+    descripcion: "",
+  });
 
   useEffect(() => {
-    cargarModelos()
-    cargarMarcas()
-  }, [])
-
-  useEffect(() => {
-    if (modelos.length > 0) {
-      setTimeout(() => syncTableColumns(), 100)
-    }
-  }, [modelos])
+    cargarModelos();
+    cargarMarcas();
+  }, []);
 
   const cargarModelos = async () => {
     try {
-      setLoading(true)
-      const data = await modeloAPI.listar()
-      setModelos(data)
-      setError(null)
+      setLoading(true);
+      const data = await modeloAPI.listar();
+      setModelos(data);
+      setError(null);
     } catch (err) {
-      setError(err.message)
+      setError(err.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const cargarMarcas = async () => {
     try {
-      const data = await marcaAPI.listar()
-      setMarcas(data)
+      const data = await marcaAPI.listar();
+      setMarcas(data);
     } catch (err) {
-      console.error('Error cargando marcas:', err)
+      console.error("Error cargando marcas:", err);
     }
-  }
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
+    setError(null);
     try {
       const data = {
         ...formData,
-        id_marca: parseInt(formData.id_marca),
-      }
+        id_marca: parseInt(formData.id_marca, 10),
+      };
+
       if (editingId) {
-        await modeloAPI.actualizar(editingId, data)
+        await modeloAPI.actualizar(editingId, data);
       } else {
-        await modeloAPI.crear(data)
+        await modeloAPI.crear(data);
       }
-      cargarModelos()
-      resetForm()
+
+      await cargarModelos();
+      resetForm();
     } catch (err) {
-      setError(err.message)
+      setError(err.message);
     }
-  }
+  };
 
   const handleEdit = (modelo) => {
-    setEditingId(modelo.id)
+    setEditingId(modelo.id);
     setFormData({
-      id_marca: modelo.marca?.id || '',
-      nombre: modelo.nombre || '',
-      descripcion: modelo.descripcion || '',
-    })
-    setShowForm(true)
-  }
+      id_marca: modelo.marca?.id || "",
+      nombre: modelo.nombre || "",
+      descripcion: modelo.descripcion || "",
+    });
+    setShowForm(true);
+  };
 
   const handleDelete = async (id) => {
-    if (window.confirm('¿Está seguro de eliminar este modelo?')) {
-      try {
-        await modeloAPI.eliminar(id)
-        cargarModelos()
-      } catch (err) {
-        setError(err.message)
-      }
+    if (!window.confirm("¿Está seguro de eliminar este modelo?")) return;
+
+    try {
+      await modeloAPI.eliminar(id);
+      await cargarModelos();
+    } catch (err) {
+      setError(err.message);
     }
-  }
+  };
 
   const resetForm = () => {
     setFormData({
-      id_marca: '',
-      nombre: '',
-      descripcion: '',
-    })
-    setEditingId(null)
-    setShowForm(false)
-  }
+      id_marca: "",
+      nombre: "",
+      descripcion: "",
+    });
+    setEditingId(null);
+    setShowForm(false);
+    setError(null);
+  };
 
-  if (loading) return <div className="loading">Cargando modelos...</div>
+  if (loading) return <div className="loading">Cargando modelos...</div>;
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+      {/* Header */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "1.5rem",
+        }}
+      >
         <h2>Modelos</h2>
-        <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
-          {showForm ? 'Cancelar' : '+ Nuevo Modelo'}
+        <button
+          className="btn btn-primary"
+          onClick={() => setShowForm(!showForm)}
+        >
+          {showForm ? "Cancelar" : "+ Nuevo Modelo"}
         </button>
       </div>
 
+      {/* Formulario */}
       {showForm && (
-        <div className="form-container" style={{ marginBottom: '2rem' }}>
-          <h3>{editingId ? 'Editar Modelo' : 'Nuevo Modelo'}</h3>
+        <div className="form-container" style={{ marginBottom: "2rem" }}>
+          <h3>{editingId ? "Editar Modelo" : "Nuevo Modelo"}</h3>
           {error && <div className="error">{error}</div>}
+
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label>Marca *</label>
               <select
                 value={formData.id_marca}
-                onChange={(e) => setFormData({ ...formData, id_marca: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, id_marca: e.target.value })
+                }
                 required
               >
                 <option value="">Seleccione una marca</option>
@@ -137,7 +150,9 @@ function Modelos() {
               <input
                 type="text"
                 value={formData.nombre}
-                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, nombre: e.target.value })
+                }
                 required
               />
             </div>
@@ -146,77 +161,79 @@ function Modelos() {
               <label>Descripción *</label>
               <textarea
                 value={formData.descripcion}
-                onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, descripcion: e.target.value })
+                }
                 required
               />
             </div>
 
             <div className="form-actions">
-              <button type="button" className="btn btn-secondary" onClick={resetForm}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={resetForm}
+              >
                 Cancelar
               </button>
               <button type="submit" className="btn btn-primary">
-                {editingId ? 'Actualizar' : 'Crear'}
+                {editingId ? "Actualizar" : "Crear"}
               </button>
             </div>
           </form>
         </div>
       )}
 
+      {/* Tabla */}
       <div className="table-container">
         {modelos.length === 0 ? (
           <div className="empty-state">
             <p>No hay modelos registrados</p>
           </div>
         ) : (
-          <>
-            <div className="table-header-wrapper">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Marca</th>
-                    <th>Nombre</th>
-                    <th>Descripción</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-              </table>
-            </div>
-            <div className="table-body-wrapper">
-              <table className="table">
-                <tbody>
-                  {modelos.map((modelo) => (
-                    <tr key={modelo.id}>
-                      <td>{modelo.marca?.nombre}</td>
-                      <td>{modelo.nombre}</td>
-                      <td>{modelo.descripcion}</td>
-                      <td>
-                        <div className="actions">
-                          <button
-                            className="btn btn-secondary btn-small"
-                            onClick={() => handleEdit(modelo)}
-                          >
-                            Editar
-                          </button>
-                          <button
-                            className="btn btn-danger btn-small"
-                            onClick={() => handleDelete(modelo.id)}
-                          >
-                            Eliminar
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Marca</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {modelos.map((modelo) => (
+                <tr key={modelo.id}>
+                  <td>{modelo.marca?.nombre || "-"}</td>
+                  <td>{modelo.nombre}</td>
+                  <td>{modelo.descripcion}</td>
+                  <td>
+                    <div className="actions">
+                      <button
+                        className="btn btn-secondary btn-small"
+                        onClick={() => handleEdit(modelo)}
+                        title="Editar modelo"
+                      >
+                        <FaEdit style={{ marginRight: "0.3rem" }} />
+                        Editar
+                      </button>
+                      <button
+                        className="btn btn-danger btn-small"
+                        onClick={() => handleDelete(modelo.id)}
+                        title="Eliminar modelo"
+                      >
+                        <FaTrash style={{ marginRight: "0.3rem" }} />
+                        Eliminar
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export default Modelos
-
+export default Modelos;

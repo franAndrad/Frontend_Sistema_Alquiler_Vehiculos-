@@ -1,130 +1,142 @@
-import { useState, useEffect } from 'react'
-import { clienteAPI } from '../services/api'
-import { FaPlus, FaEdit, FaTrash, FaTimes, FaSave } from 'react-icons/fa'
-import { formatearFecha, formatearFechaLegible } from '../utils/dateFormatter'
-import { syncTableColumns } from '../utils/tableSync'
-import '../components/Table.css'
-import '../components/Form.css'
+import { useState, useEffect } from "react";
+import { clienteAPI } from "../services/api";
+import { FaPlus, FaEdit, FaTrash, FaTimes, FaSave } from "react-icons/fa";
+import { formatearFecha, formatearFechaLegible } from "../utils/dateFormatter";
+
+import "../components/Table.css";
+import "../components/Form.css";
 
 function Clientes() {
-  const [clientes, setClientes] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [showForm, setShowForm] = useState(false)
-  const [editingId, setEditingId] = useState(null)
+  const [clientes, setClientes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
-    nombre: '',
-    apellido: '',
-    dni: '',
-    direccion: '',
-    telefono: '',
-    email: '',
-    licencia_numero: '',
-    licencia_categoria: '',
-    licencia_vencimiento: '',
-  })
+    nombre: "",
+    apellido: "",
+    dni: "",
+    direccion: "",
+    telefono: "",
+    email: "",
+    licencia_numero: "",
+    licencia_categoria: "",
+    licencia_vencimiento: "",
+  });
 
   useEffect(() => {
-    cargarClientes()
-  }, [])
+    cargarClientes();
+  }, []);
 
   useEffect(() => {
     if (clientes.length > 0) {
-      setTimeout(() => syncTableColumns(), 100)
+
     }
-  }, [clientes])
+  }, [clientes]);
 
   const cargarClientes = async () => {
     try {
-      setLoading(true)
-      const data = await clienteAPI.listar()
-      setClientes(data)
-      setError(null)
+      setLoading(true);
+      const data = await clienteAPI.listar();
+      setClientes(data);
+      setError(null);
     } catch (err) {
-      setError(err.message)
+      setError(err.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
-
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError(null)
+    e.preventDefault();
+    setError(null);
     try {
       if (editingId) {
-        await clienteAPI.actualizar(editingId, formData)
+        await clienteAPI.actualizar(editingId, formData);
       } else {
-        await clienteAPI.crear(formData)
+        await clienteAPI.crear(formData);
       }
-      cargarClientes()
-      resetForm()
+      cargarClientes();
+      resetForm();
     } catch (err) {
-      setError(err.message)
+      setError(err.message);
     }
-  }
+  };
 
   const handleEdit = (cliente) => {
-    setEditingId(cliente.id)
+    setEditingId(cliente.id);
     // Formatear la fecha para el input de tipo date (solo fecha, sin hora)
-    const fechaVencimiento = formatearFecha(cliente.licencia_vencimiento, false)
+    const fechaVencimiento = formatearFecha(
+      cliente.licencia_vencimiento,
+      false
+    );
     setFormData({
-      nombre: cliente.nombre || '',
-      apellido: cliente.apellido || '',
-      dni: cliente.dni || '',
-      direccion: cliente.direccion || '',
-      telefono: cliente.telefono || '',
-      email: cliente.email || '',
-      licencia_numero: cliente.licencia_numero || '',
-      licencia_categoria: cliente.licencia_categoria || '',
+      nombre: cliente.nombre || "",
+      apellido: cliente.apellido || "",
+      dni: cliente.dni || "",
+      direccion: cliente.direccion || "",
+      telefono: cliente.telefono || "",
+      email: cliente.email || "",
+      licencia_numero: cliente.licencia_numero || "",
+      licencia_categoria: cliente.licencia_categoria || "",
       licencia_vencimiento: fechaVencimiento,
-    })
-    setShowForm(true)
-  }
+    });
+    setShowForm(true);
+  };
 
   const handleDelete = async (id) => {
-    if (window.confirm('¿Está seguro de eliminar este cliente?')) {
+    if (window.confirm("¿Está seguro de eliminar este cliente?")) {
       try {
-        await clienteAPI.eliminar(id)
-        cargarClientes()
+        await clienteAPI.eliminar(id);
+        cargarClientes();
       } catch (err) {
-        setError(err.message)
+        setError(err.message);
       }
     }
-  }
+  };
 
   const resetForm = () => {
     setFormData({
-      nombre: '',
-      apellido: '',
-      dni: '',
-      direccion: '',
-      telefono: '',
-      email: '',
-      licencia_numero: '',
-      licencia_categoria: '',
-      licencia_vencimiento: '',
-    })
-    setEditingId(null)
-    setShowForm(false)
-    setError(null)
-  }
+      nombre: "",
+      apellido: "",
+      dni: "",
+      direccion: "",
+      telefono: "",
+      email: "",
+      licencia_numero: "",
+      licencia_categoria: "",
+      licencia_vencimiento: "",
+    });
+    setEditingId(null);
+    setShowForm(false);
+    setError(null);
+  };
 
-  if (loading) return <div className="loading">Cargando clientes...</div>
+  if (loading) return <div className="loading">Cargando clientes...</div>;
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "24px",
+        }}
+      >
         <h2 style={{ margin: 0 }}>Clientes</h2>
-        <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
+        <button
+          className="btn btn-primary"
+          onClick={() => setShowForm(!showForm)}
+        >
           {showForm ? (
             <>
-              <FaTimes style={{ marginRight: '0.5rem' }} />
+              <FaTimes style={{ marginRight: "0.5rem" }} />
               Cancelar
             </>
           ) : (
             <>
-              <FaPlus style={{ marginRight: '0.5rem' }} />
+              <FaPlus style={{ marginRight: "0.5rem" }} />
               Nuevo Cliente
             </>
           )}
@@ -132,26 +144,34 @@ function Clientes() {
       </div>
 
       {showForm && (
-        <div className="form-container" style={{ marginBottom: '2rem' }}>
-          <h3>{editingId ? 'Editar Cliente' : 'Nuevo Cliente'}</h3>
+        <div className="form-container" style={{ marginBottom: "2rem" }}>
+          <h3>{editingId ? "Editar Cliente" : "Nuevo Cliente"}</h3>
           {error && <div className="error">{error}</div>}
           <form onSubmit={handleSubmit}>
             <div className="form-row">
               <div className="form-group">
-                <label>Nombre<span className="required-asterisk"> *</span></label>
+                <label>
+                  Nombre<span className="required-asterisk"> *</span>
+                </label>
                 <input
                   type="text"
                   value={formData.nombre}
-                  onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, nombre: e.target.value })
+                  }
                   required
                 />
               </div>
               <div className="form-group">
-                <label>Apellido<span className="required-asterisk"> *</span></label>
+                <label>
+                  Apellido<span className="required-asterisk"> *</span>
+                </label>
                 <input
                   type="text"
                   value={formData.apellido}
-                  onChange={(e) => setFormData({ ...formData, apellido: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, apellido: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -159,20 +179,28 @@ function Clientes() {
 
             <div className="form-row">
               <div className="form-group">
-                <label>DNI<span className="required-asterisk"> *</span></label>
+                <label>
+                  DNI<span className="required-asterisk"> *</span>
+                </label>
                 <input
                   type="text"
                   value={formData.dni}
-                  onChange={(e) => setFormData({ ...formData, dni: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, dni: e.target.value })
+                  }
                   required
                 />
               </div>
               <div className="form-group">
-                <label>Email<span className="required-asterisk"> *</span></label>
+                <label>
+                  Email<span className="required-asterisk"> *</span>
+                </label>
                 <input
                   type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -184,7 +212,9 @@ function Clientes() {
                 <input
                   type="text"
                   value={formData.direccion}
-                  onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, direccion: e.target.value })
+                  }
                 />
               </div>
               <div className="form-group">
@@ -192,56 +222,86 @@ function Clientes() {
                 <input
                   type="text"
                   value={formData.telefono}
-                  onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, telefono: e.target.value })
+                  }
                 />
               </div>
             </div>
 
             <div className="form-row">
               <div className="form-group">
-                <label>Número de Licencia<span className="required-asterisk"> *</span></label>
+                <label>
+                  Número de Licencia
+                  <span className="required-asterisk"> *</span>
+                </label>
                 <input
                   type="text"
                   value={formData.licencia_numero}
-                  onChange={(e) => setFormData({ ...formData, licencia_numero: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      licencia_numero: e.target.value,
+                    })
+                  }
                   required
                 />
               </div>
               <div className="form-group">
-                <label>Categoría de Licencia<span className="required-asterisk"> *</span></label>
+                <label>
+                  Categoría de Licencia
+                  <span className="required-asterisk"> *</span>
+                </label>
                 <input
                   type="text"
                   value={formData.licencia_categoria}
-                  onChange={(e) => setFormData({ ...formData, licencia_categoria: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      licencia_categoria: e.target.value,
+                    })
+                  }
                   required
                 />
               </div>
             </div>
 
             <div className="form-group">
-              <label>Vencimiento de Licencia<span className="required-asterisk"> *</span></label>
+              <label>
+                Vencimiento de Licencia
+                <span className="required-asterisk"> *</span>
+              </label>
               <input
                 type="date"
                 value={formData.licencia_vencimiento}
-                onChange={(e) => setFormData({ ...formData, licencia_vencimiento: e.target.value })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    licencia_vencimiento: e.target.value,
+                  })
+                }
                 required
               />
             </div>
 
             <div className="form-actions">
-              <button type="button" className="btn btn-secondary" onClick={resetForm}>
-                <FaTimes style={{ marginRight: '0.5rem' }} />
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={resetForm}
+              >
+                <FaTimes style={{ marginRight: "0.5rem" }} />
                 Cancelar
               </button>
               <button type="submit" className="btn btn-primary">
                 {editingId ? (
                   <>
-                    <FaSave style={{ marginRight: '0.5rem' }} />
+                    <FaSave style={{ marginRight: "0.5rem" }} />
                     Actualizar
                   </>
                 ) : (
                   <>
-                    <FaPlus style={{ marginRight: '0.5rem' }} />
+                    <FaPlus style={{ marginRight: "0.5rem" }} />
                     Crear
                   </>
                 )}
@@ -257,63 +317,55 @@ function Clientes() {
             <p>No hay clientes registrados</p>
           </div>
         ) : (
-          <>
-            <div className="table-header-wrapper">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Nombre</th>
-                    <th>Apellido</th>
-                    <th>DNI</th>
-                    <th>Email</th>
-                    <th>Dirección</th>
-                    <th>Vencimiento Licencia</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-              </table>
-            </div>
-            <div className="table-body-wrapper">
-              <table className="table">
-                <tbody>
-                  {clientes.map((cliente) => (
-                    <tr key={cliente.id}>
-                      <td>{cliente.nombre}</td>
-                      <td>{cliente.apellido}</td>
-                      <td>{cliente.dni}</td>
-                      <td>{cliente.email}</td>
-                      <td>{cliente.direccion || '-'}</td>
-                      <td>{formatearFechaLegible(cliente.licencia_vencimiento)}</td>
-                      <td>
-                        <div className="actions">
-                          <button
-                            className="btn btn-secondary btn-small"
-                            onClick={() => handleEdit(cliente)}
-                            title="Editar cliente"
-                          >
-                            <FaEdit style={{ marginRight: '0.3rem' }} />
-                            Editar
-                          </button>
-                          <button
-                            className="btn btn-danger btn-small"
-                            onClick={() => handleDelete(cliente.id)}
-                            title="Eliminar cliente"
-                          >
-                            <FaTrash style={{ marginRight: '0.3rem' }} />
-                            Eliminar
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>DNI</th>
+                <th>Email</th>
+                <th>Dirección</th>
+                <th>Vencimiento Licencia</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {clientes.map((cliente) => (
+                <tr key={cliente.id}>
+                  <td>{cliente.nombre}</td>
+                  <td>{cliente.apellido}</td>
+                  <td>{cliente.dni}</td>
+                  <td>{cliente.email}</td>
+                  <td>{cliente.direccion || "-"}</td>
+                  <td>{formatearFechaLegible(cliente.licencia_vencimiento)}</td>
+                  <td>
+                    <div className="actions">
+                      <button
+                        className="btn btn-secondary btn-small"
+                        onClick={() => handleEdit(cliente)}
+                        title="Editar cliente"
+                      >
+                        <FaEdit style={{ marginRight: "0.3rem" }} />
+                        Editar
+                      </button>
+                      <button
+                        className="btn btn-danger btn-small"
+                        onClick={() => handleDelete(cliente.id)}
+                        title="Eliminar cliente"
+                      >
+                        <FaTrash style={{ marginRight: "0.3rem" }} />
+                        Eliminar
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export default Clientes
+export default Clientes;
