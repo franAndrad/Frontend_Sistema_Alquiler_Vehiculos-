@@ -5,6 +5,7 @@ import { FaChartBar, FaCar, FaCalendarAlt } from "react-icons/fa";
 import "../components/Table.css";
 import "../components/Form.css";
 import "./Reportes.css";
+import BarChart from "../components/BarChart";
 
 function Reportes() {
   const [loading, setLoading] = useState(false);
@@ -16,6 +17,7 @@ function Reportes() {
     desde: "",
     hasta: "",
     limit: 10,
+    anio: "",
   });
 
   const handleGenerarReporte = async () => {
@@ -35,6 +37,15 @@ function Reportes() {
           filtros.hasta || null,
           filtros.limit || 10
         );
+      } else if (reporteTipo === "facturacion-mensual") {
+        if (!filtros.anio) {
+          throw new Error(
+            "Debe seleccionar un año para la facturación mensual"
+          );
+        }
+
+        // SOLO AÑO – se elimina mes
+        data = await alquilerAPI.facturacionMensual(filtros.anio);
       }
 
       setDatosReporte(data);
@@ -47,7 +58,12 @@ function Reportes() {
   };
 
   const resetFiltros = () => {
-    setFiltros({ desde: "", hasta: "", limit: 10 });
+    setFiltros({
+      desde: "",
+      hasta: "",
+      limit: 10,
+      anio: "",
+    });
     setDatosReporte([]);
     setError(null);
   };
@@ -90,34 +106,54 @@ function Reportes() {
             <option value="vehiculos-mas-alquilados">
               Vehículos Más Alquilados
             </option>
+            <option value="facturacion-mensual">
+              Estadística de facturación mensual
+            </option>
           </select>
         </div>
 
-        {/* Fechas */}
-        <div className="form-row">
-          <div className="form-group">
-            <label>Fecha Desde</label>
-            <input
-              type="date"
-              value={filtros.desde}
-              onChange={(e) =>
-                setFiltros({ ...filtros, desde: e.target.value })
-              }
-            />
+        {/* Fechas → solo si NO es facturación mensual */}
+        {reporteTipo !== "facturacion-mensual" && (
+          <div className="form-row">
+            <div className="form-group">
+              <label>Fecha Desde</label>
+              <input
+                type="date"
+                value={filtros.desde}
+                onChange={(e) =>
+                  setFiltros({ ...filtros, desde: e.target.value })
+                }
+              />
+            </div>
+            <div className="form-group">
+              <label>Fecha Hasta</label>
+              <input
+                type="date"
+                value={filtros.hasta}
+                onChange={(e) =>
+                  setFiltros({ ...filtros, hasta: e.target.value })
+                }
+              />
+            </div>
           </div>
-          <div className="form-group">
-            <label>Fecha Hasta</label>
-            <input
-              type="date"
-              value={filtros.hasta}
-              onChange={(e) =>
-                setFiltros({ ...filtros, hasta: e.target.value })
-              }
-            />
-          </div>
-        </div>
+        )}
 
-        {/* Límite */}
+        {/* Año → ÚNICO filtro para facturación mensual */}
+        {reporteTipo === "facturacion-mensual" && (
+          <div className="form-group">
+            <label>Año *</label>
+            <input
+              type="number"
+              min="2000"
+              max="2100"
+              placeholder="Ej: 2025"
+              value={filtros.anio}
+              onChange={(e) => setFiltros({ ...filtros, anio: e.target.value })}
+            />
+          </div>
+        )}
+
+        {/* Límite (solo para top vehículos) */}
         {reporteTipo === "vehiculos-mas-alquilados" && (
           <div className="form-group">
             <label>Límite de Resultados</label>
@@ -158,10 +194,10 @@ function Reportes() {
       {/* LOADING */}
       {loading && <div className="loading">Generando reporte...</div>}
 
-      {/* TABLA RESULTADOS */}
+      {/* RESULTADOS */}
       {datosReporte.length > 0 && (
-        <div className="">
-          {/* HEADER SOLO VISUAL — NO SCROLLEA */}
+        <div>
+          {/* Header visual */}
           <div className="reporte-header">
             <h3>
               {reporteTipo === "periodo" ? (
@@ -169,16 +205,23 @@ function Reportes() {
                   <FaCalendarAlt style={{ marginRight: "0.5rem" }} />
                   Alquileres del Período
                 </>
-              ) : (
+              ) : reporteTipo === "vehiculos-mas-alquilados" ? (
                 <>
                   <FaCar style={{ marginRight: "0.5rem" }} />
                   Vehículos Más Alquilados
+                </>
+              ) : (
+                <>
+                  <FaChartBar style={{ marginRight: "0.5rem" }} />
+                  Facturación Mensual
                 </>
               )}
             </h3>
 
             <p className="reporte-info">
-              {reporteTipo === "periodo"
+              {reporteTipo === "facturacion-mensual"
+                ? `Facturación total del año ${filtros.anio}`
+                : reporteTipo === "periodo"
                 ? `Período: ${formatearFechaLegible(
                     filtros.desde
                   )} - ${formatearFechaLegible(filtros.hasta)}`
@@ -186,91 +229,106 @@ function Reportes() {
             </p>
           </div>
 
-          <div className = "table-container">
-          {reporteTipo === "periodo" ? (
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Cliente</th>
-                  <th>Vehículo</th>
-                  <th>Empleado</th>
-                  <th>Fecha Inicio</th>
-                  <th>Fecha Fin</th>
-                  <th>Costo Total</th>
-                  <th>Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {datosReporte.map((alq) => (
-                  <tr key={alq.id}>
-                    <td>
-                      {alq.cliente?.nombre} {alq.cliente?.apellido}
-                    </td>
-                    <td>{alq.vehiculo?.patente}</td>
-                    <td>
-                      {alq.empleado?.nombre} {alq.empleado?.apellido}
-                    </td>
-                    <td>{formatearFechaLegible(alq.fecha_inicio)}</td>
-                    <td>{formatearFechaLegible(alq.fecha_fin)}</td>
-                    <td>
-                      {alq.costo_total
-                        ? `$${alq.costo_total.toLocaleString("es-AR", {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}`
-                        : "-"}
-                    </td>
-                    <td>
-                      <span className="estado-pill" data-estado={alq.estado}>
-                        {alq.estado}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          {/* Gráfico de facturación mensual */}
+          {reporteTipo === "facturacion-mensual" ? (
+            <div className="chart-container">
+              <BarChart
+                labels={datosReporte.map((x) => x.mes)}
+                values={datosReporte.map((x) => x.total)}
+              />
+            </div>
           ) : (
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Posición</th>
-                  <th>Patente</th>
-                  <th>Modelo</th>
-                  <th>Alquileres</th>
-                </tr>
-              </thead>
-              <tbody>
-                {datosReporte.map((item, index) => {
-                  const modelo = item.vehiculo?.modelo
-                    ? `${item.vehiculo.modelo.marca?.nombre || ""} ${
-                        item.vehiculo.modelo.nombre || ""
-                      }`
-                    : "-";
-
-                  return (
-                    <tr key={item.vehiculo_id || index}>
-                      <td>
-                        <span className="ranking-badge">{index + 1}</span>
-                      </td>
-                      <td>{item.vehiculo?.patente || "-"}</td>
-                      <td>{modelo}</td>
-                      <td>
-                        <strong>
-                          {item.cantidad_alquileres ||
-                            item.total_alquileres ||
-                            0}
-                        </strong>
-                      </td>
+            <div className="table-container">
+              {/* Tablas existentes */}
+              {reporteTipo === "periodo" ? (
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Cliente</th>
+                      <th>Vehículo</th>
+                      <th>Empleado</th>
+                      <th>Fecha Inicio</th>
+                      <th>Fecha Fin</th>
+                      <th>Costo Total</th>
+                      <th>Estado</th>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody>
+                    {datosReporte.map((alq) => (
+                      <tr key={alq.id}>
+                        <td>
+                          {alq.cliente?.nombre} {alq.cliente?.apellido}
+                        </td>
+                        <td>{alq.vehiculo?.patente}</td>
+                        <td>
+                          {alq.empleado?.nombre} {alq.empleado?.apellido}
+                        </td>
+                        <td>{formatearFechaLegible(alq.fecha_inicio)}</td>
+                        <td>{formatearFechaLegible(alq.fecha_fin)}</td>
+                        <td>
+                          {alq.costo_total
+                            ? `$${alq.costo_total.toLocaleString("es-AR", {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}`
+                            : "-"}
+                        </td>
+                        <td>
+                          <span
+                            className="estado-pill"
+                            data-estado={alq.estado}
+                          >
+                            {alq.estado}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Posición</th>
+                      <th>Patente</th>
+                      <th>Modelo</th>
+                      <th>Alquileres</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {datosReporte.map((item, index) => {
+                      const modelo = item.vehiculo?.modelo
+                        ? `${item.vehiculo.modelo.marca?.nombre || ""} ${
+                            item.vehiculo.modelo.nombre || ""
+                          }`
+                        : "-";
+
+                      return (
+                        <tr key={item.vehiculo_id || index}>
+                          <td>
+                            <span className="ranking-badge">{index + 1}</span>
+                          </td>
+                          <td>{item.vehiculo?.patente || "-"}</td>
+                          <td>{modelo}</td>
+                          <td>
+                            <strong>
+                              {item.cantidad_alquileres ||
+                                item.total_alquileres ||
+                                0}
+                            </strong>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
           )}
-          </div>
         </div>
       )}
 
+      {/* VACÍO */}
       {datosReporte.length === 0 && !loading && (
         <div className="empty-state">
           <p>

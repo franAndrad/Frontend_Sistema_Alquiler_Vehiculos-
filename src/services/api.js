@@ -69,6 +69,11 @@ export const alquilerAPI = {
     if (limit) url += `limit=${limit}`
     return fetchAPI(url)
   },
+  facturacionMensual: (anio, mes) => {
+    let url = `/alquileres/facturacion-mensual?anio=${anio}`
+    if (mes) url += `&mes=${mes}`
+    return fetchAPI(url)
+  },
 }
 
 export const reservaAPI = {
