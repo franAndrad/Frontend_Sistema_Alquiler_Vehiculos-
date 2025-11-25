@@ -252,8 +252,8 @@ function Clientes() {
                   Categoría de Licencia
                   <span className="required-asterisk"> *</span>
                 </label>
-                <input
-                  type="text"
+
+                <select
                   value={formData.licencia_categoria}
                   onChange={(e) =>
                     setFormData({
@@ -262,7 +262,14 @@ function Clientes() {
                     })
                   }
                   required
-                />
+                >
+                  <option value="">Seleccione categoría</option>
+                  <option value="A">A</option>
+                  <option value="B1">B1</option>
+                  <option value="B2">B2</option>
+                  <option value="C1">C1</option>
+                  <option value="C2">C2</option>
+                </select>
               </div>
             </div>
 
@@ -335,7 +342,16 @@ function Clientes() {
                   <td>{cliente.nombre}</td>
                   <td>{cliente.apellido}</td>
                   <td>{cliente.dni}</td>
-                   <td style={{maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{cliente.email}</td>
+                  <td
+                    style={{
+                      maxWidth: "140px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {cliente.email}
+                  </td>
                   <td>{cliente.direccion || "-"}</td>
                   <td>{formatearFechaLegible(cliente.licencia_vencimiento)}</td>
                   <td>
