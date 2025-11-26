@@ -91,7 +91,6 @@ export const empleadoAPI = {
   obtener: (id) => fetchAPI(`/empleados/${id}`),
   crear: (data) => fetchAPI('/empleados', { method: 'POST', body: data }),
   actualizar: (id, data) => fetchAPI(`/empleados/${id}`, { method: 'PUT', body: data }),
-  eliminar: (id) => fetchAPI(`/empleados/${id}`, { method: 'DELETE' }),
   listarPorRol: (rol) => fetchAPI(`/empleados/rol/${rol}`),
   obtenerPorDni: (dni) => fetchAPI(`/empleados/dni/${dni}`),
   obtenerPorEmail: (email) => fetchAPI(`/empleados/email/${email}`),

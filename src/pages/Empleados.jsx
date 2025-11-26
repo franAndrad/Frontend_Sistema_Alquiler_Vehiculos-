@@ -17,6 +17,7 @@ function Empleados() {
     telefono: "",
     email: "",
     rol: "",
+    password: "",
   });
 
   useEffect(() => {
@@ -39,12 +40,20 @@ function Empleados() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editingId) {
-        await empleadoAPI.actualizar(editingId, formData);
-      } else {
-        await empleadoAPI.crear(formData);
+      const payload = { ...formData };
+
+      // Si estás editando y la password viene vacía, NO la mandamos
+      if (editingId && !payload.password) {
+        delete payload.password;
       }
-      cargarEmpleados();
+
+      if (editingId) {
+        await empleadoAPI.actualizar(editingId, payload);
+      } else {
+        await empleadoAPI.crear(payload);
+      }
+
+      await cargarEmpleados();
       resetForm();
     } catch (err) {
       setError(err.message);
@@ -61,19 +70,9 @@ function Empleados() {
       telefono: empleado.telefono || "",
       email: empleado.email || "",
       rol: empleado.rol || "",
+      password: "", // se deja vacío para cambiar solo si se escribe algo
     });
     setShowForm(true);
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm("¿Está seguro de eliminar este empleado?")) {
-      try {
-        await empleadoAPI.eliminar(id);
-        cargarEmpleados();
-      } catch (err) {
-        setError(err.message);
-      }
-    }
   };
 
   const resetForm = () => {
@@ -85,6 +84,7 @@ function Empleados() {
       telefono: "",
       email: "",
       rol: "",
+      password: "",
     });
     setEditingId(null);
     setShowForm(false);
@@ -106,7 +106,15 @@ function Empleados() {
         <h2>Empleados</h2>
         <button
           className="btn btn-primary"
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => {
+            // si venías editando y apretás "Nuevo", reseteamos todo
+            if (!showForm) {
+              resetForm();
+              setShowForm(true);
+            } else {
+              resetForm();
+            }
+          }}
         >
           {showForm ? "Cancelar" : "+ Nuevo Empleado"}
         </button>
@@ -191,20 +199,34 @@ function Empleados() {
               </div>
             </div>
 
-            <div className="form-group">
-              <label>Rol *</label>
-              <select
-                value={formData.rol}
-                onChange={(e) =>
-                  setFormData({ ...formData, rol: e.target.value })
-                }
-                required
-              >
-                <option value="">Seleccione un rol</option>
-                <option value="ADMINISTRADOR">Administrador</option>
-                <option value="VENDEDOR">Vendedor</option>
-                <option value="MECANICO">Mecánico</option>
-              </select>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Rol *</label>
+                <select
+                  value={formData.rol}
+                  onChange={(e) =>
+                    setFormData({ ...formData, rol: e.target.value })
+                  }
+                  required
+                >
+                  <option value="">Seleccione un rol</option>
+                  <option value="ADMIN">Administrador</option>
+                  <option value="ATENCION">Vendedor</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>
+                  Contraseña {editingId ? "(dejar vacío para no cambiar)" : "*"}
+                </label>
+                <input
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
+                  required={!editingId}
+                />
+              </div>
             </div>
 
             <div className="form-actions">
@@ -249,11 +271,20 @@ function Empleados() {
                   <td>{empleado.nombre}</td>
                   <td>{empleado.apellido}</td>
                   <td>{empleado.dni}</td>
-                  <td style={{maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{empleado.email}</td>
+                  <td
+                    style={{
+                      maxWidth: "140px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {empleado.email}
+                  </td>
                   <td>{empleado.direccion || "-"}</td>
                   <td>{empleado.telefono || "-"}</td>
                   <td>
-                        <span
+                    <span
                       style={{
                         padding: "0.3rem 0.6rem",
                         borderRadius: "4px",
@@ -272,7 +303,8 @@ function Empleados() {
                             : "#721c24",
                       }}
                     >
-                      {empleado.rol}</span>
+                      {empleado.rol}
+                    </span>
                   </td>
                   <td>
                     <div className="actions">
@@ -281,12 +313,6 @@ function Empleados() {
                         onClick={() => handleEdit(empleado)}
                       >
                         Editar
-                      </button>
-                      <button
-                        className="btn btn-danger btn-small"
-                        onClick={() => handleDelete(empleado.id)}
-                      >
-                        Eliminar
                       </button>
                     </div>
                   </td>
