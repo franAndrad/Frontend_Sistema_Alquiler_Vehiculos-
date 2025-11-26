@@ -1,17 +1,6 @@
-/**
- * Configuración de la API
- * 
- * En desarrollo, Vite expone las variables de entorno con el prefijo VITE_
- * Para producción, ajusta estas variables según tu entorno
- */
-
-// URL base de la API - por defecto apunta a Docker en localhost:5000
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
-
-// Timeout para las peticiones (en milisegundos)
 export const API_TIMEOUT = import.meta.env.VITE_API_TIMEOUT || 30000
 
-// Configuración de CORS (si es necesario)
 export const API_CONFIG = {
   baseURL: API_BASE_URL,
   timeout: API_TIMEOUT,
@@ -20,7 +9,6 @@ export const API_CONFIG = {
   },
 }
 
-// Función para verificar si la API está disponible
 export async function checkAPIHealth() {
   try {
     const controller = new AbortController();

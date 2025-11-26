@@ -305,6 +305,13 @@
   font-weight: bold;
 }
 
+.subtitle {
+  color: var(--gray-600);
+  font-size: 14px;
+  margin-top: -10px;
+  margin-bottom: 20px;
+}
+
 @keyframes slideInRight {
   from {
     opacity: 0;

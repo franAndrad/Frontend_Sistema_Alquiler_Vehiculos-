@@ -23,7 +23,6 @@ function Reportes() {
     anio: "",
   });
 
-  // Contenedor que se exporta a PDF (header + contenido)
   const reporteRef = useRef(null);
 
   const handleGenerarReporte = async () => {
@@ -83,8 +82,6 @@ function Reportes() {
 
     try {
       const element = reporteRef.current;
-
-      // Opcional: subir al top para evitar cortes visuales raros
       window.scrollTo(0, 0);
 
       const canvas = await html2canvas(element, {

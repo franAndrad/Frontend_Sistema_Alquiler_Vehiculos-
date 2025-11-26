@@ -116,7 +116,7 @@ function Marcas() {
         </button>
       </div>
 
-      {/* Error global (arriba, como en Modelos) */}
+      {/* Error global*/}
       {error && (
         <div className="error" style={{ marginBottom: "1rem" }}>
           {error}

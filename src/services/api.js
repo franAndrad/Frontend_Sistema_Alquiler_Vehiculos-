@@ -16,8 +16,6 @@ async function fetchAPI(endpoint, options = {}) {
 
   try {
     const response = await fetch(url, config);
-
-    // 👇 Puede no haber body (204, PATCH, DELETE, etc.)
     const text = await response.text();
     let data = null;
 
@@ -25,7 +23,7 @@ async function fetchAPI(endpoint, options = {}) {
       try {
         data = JSON.parse(text);
       } catch {
-        data = text; // texto plano
+        data = text; 
       }
     }
 
@@ -35,7 +33,7 @@ async function fetchAPI(endpoint, options = {}) {
       throw new Error(msg);
     }
 
-    return data; // puede ser null y está bien
+    return data; 
   } catch (error) {
     console.error("API Error:", error);
     throw error;

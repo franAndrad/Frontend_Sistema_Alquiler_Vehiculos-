@@ -20,6 +20,8 @@ function Alquileres() {
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [filtroEstado, setFiltroEstado] = useState(""); // 👈 filtro por estado
+
   const [formData, setFormData] = useState({
     id_cliente: "",
     id_vehiculo: "",
@@ -110,6 +112,7 @@ function Alquileres() {
       fecha_inicio: formatearFecha(alquiler.fecha_inicio, false) || "",
       fecha_fin: formatearFecha(alquiler.fecha_fin, false) || "",
     });
+    setError(null);
     setShowForm(true);
   };
 
@@ -120,6 +123,7 @@ function Alquileres() {
       await alquilerAPI.finalizar(id);
       await cargarAlquileres();
       await cargarVehiculos();
+      setError(null);
     } catch (err) {
       setError(err.message);
     }
@@ -138,6 +142,11 @@ function Alquileres() {
     setError(null);
   };
 
+  const alquileresFiltrados =
+    filtroEstado === ""
+      ? alquileres
+      : alquileres.filter((a) => a.estado === filtroEstado);
+
   if (loading) return <div className="loading">Cargando alquileres...</div>;
 
   return (
@@ -148,23 +157,62 @@ function Alquileres() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: "24px",
+          marginBottom: "16px",
         }}
       >
         <h2 style={{ margin: 0 }}>Alquileres</h2>
         <button
           className="btn btn-primary"
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => {
+            if (showForm) {
+              resetForm();
+            } else {
+              resetForm();
+              setShowForm(true);
+            }
+          }}
         >
           {showForm ? "Cancelar" : "+ Nuevo Alquiler"}
         </button>
+      </div>
+
+      {/* Error global arriba */}
+      {error && (
+        <div className="error" style={{ marginBottom: "1rem" }}>
+          {error}
+        </div>
+      )}
+
+      {/* Filtro por estado */}
+      <div
+        style={{
+          marginBottom: "1rem",
+          display: "flex",
+          gap: "1rem",
+          alignItems: "center",
+        }}
+      >
+        <label>Filtrar por estado:</label>
+        <select
+          value={filtroEstado}
+          onChange={(e) => setFiltroEstado(e.target.value)}
+          style={{
+            padding: "0.5rem",
+            borderRadius: "6px",
+            border: "1px solid #ced4da",
+          }}
+        >
+          <option value="">Todos</option>
+          <option value="ACTIVO">Activo</option>
+          <option value="FINALIZADO">Finalizado</option>
+          <option value="CANCELADO">Cancelado</option>
+        </select>
       </div>
 
       {/* Formulario */}
       {showForm && (
         <div className="form-container" style={{ marginBottom: "2rem" }}>
           <h3>{editingId ? "Editar Alquiler" : "Nuevo Alquiler"}</h3>
-          {error && <div className="error">{error}</div>}
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">
@@ -272,9 +320,9 @@ function Alquileres() {
 
       {/* Tabla */}
       <div className="table-container">
-        {alquileres.length === 0 ? (
+        {alquileresFiltrados.length === 0 ? (
           <div className="empty-state">
-            <p>No hay alquileres registrados</p>
+            <p>No hay alquileres registrados para ese filtro</p>
           </div>
         ) : (
           <table className="table">
@@ -289,7 +337,7 @@ function Alquileres() {
               </tr>
             </thead>
             <tbody>
-              {alquileres.map((alquiler) => (
+              {alquileresFiltrados.map((alquiler) => (
                 <tr key={alquiler.id}>
                   <td>
                     {alquiler.cliente?.nombre} {alquiler.cliente?.apellido}
@@ -339,7 +387,6 @@ function Alquileres() {
                         <FaEdit style={{ marginRight: "0.3rem" }} />
                         Editar
                       </button>
-                      {/* Botón Eliminar eliminado */}
                     </div>
                   </td>
                 </tr>

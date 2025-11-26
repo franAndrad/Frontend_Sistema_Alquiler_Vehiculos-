@@ -13,6 +13,8 @@ function Reservas() {
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [filtroEstado, setFiltroEstado] = useState(""); // 👈 filtro por estado
+
   const [formData, setFormData] = useState({
     id_cliente: "",
     id_vehiculo: "",
@@ -86,7 +88,6 @@ function Reservas() {
   const handleEdit = (reserva) => {
     setEditingId(reserva.id);
 
-    // Cortamos a YYYY-MM-DD por si vienen con hora desde el backend
     const fechaInicio =
       (reserva.fecha_inicio && reserva.fecha_inicio.slice(0, 10)) || "";
     const fechaFin =
@@ -99,6 +100,7 @@ function Reservas() {
       fecha_fin: fechaFin,
     });
 
+    setError(null);
     setShowForm(true);
   };
 
@@ -108,6 +110,7 @@ function Reservas() {
     try {
       await reservaAPI.cancelar(id);
       await cargarReservas();
+      setError(null);
     } catch (err) {
       setError(err.message);
     }
@@ -123,6 +126,11 @@ function Reservas() {
     setEditingId(null);
     setError(null);
   };
+
+  const reservasFiltradas =
+    filtroEstado === ""
+      ? reservas
+      : reservas.filter((r) => r.estado === filtroEstado);
 
   if (loading) return <div className="loading">Cargando reservas...</div>;
 
@@ -142,11 +150,9 @@ function Reservas() {
           className="btn btn-primary"
           onClick={() => {
             if (showForm) {
-              // cerrar y limpiar
               resetForm();
               setShowForm(false);
             } else {
-              // abrir en modo "nueva reserva"
               resetForm();
               setShowForm(true);
             }
@@ -156,11 +162,44 @@ function Reservas() {
         </button>
       </div>
 
+      {/* Error global arriba */}
+      {error && (
+        <div className="error" style={{ marginBottom: "1rem" }}>
+          {error}
+        </div>
+      )}
+
+      {/* Filtro por estado */}
+      <div
+        style={{
+          marginBottom: "1rem",
+          display: "flex",
+          gap: "1rem",
+          alignItems: "center",
+        }}
+      >
+        <label>Filtrar por estado:</label>
+        <select
+          value={filtroEstado}
+          onChange={(e) => setFiltroEstado(e.target.value)}
+          style={{
+            padding: "0.5rem",
+            borderRadius: "6px",
+            border: "1px solid #ced4da",
+          }}
+        >
+          <option value="">Todos</option>
+          <option value="CONFIRMADA">Confirmada</option>
+          <option value="FINALIZADA">Finalizada</option>
+          <option value="EXPIRADA">Expirada</option>
+          <option value="CANCELADA">Cancelada</option>
+        </select>
+      </div>
+
       {/* Formulario */}
       {showForm && (
         <div className="form-container" style={{ marginBottom: "2rem" }}>
           <h3>{editingId ? "Editar Reserva" : "Nueva Reserva"}</h3>
-          {error && <div className="error">{error}</div>}
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">
@@ -260,9 +299,9 @@ function Reservas() {
 
       {/* Tabla */}
       <div className="table-container">
-        {reservas.length === 0 ? (
+        {reservasFiltradas.length === 0 ? (
           <div className="empty-state">
-            <p>No hay reservas registradas</p>
+            <p>No hay reservas registradas para ese filtro</p>
           </div>
         ) : (
           <table className="table">
@@ -276,7 +315,7 @@ function Reservas() {
               </tr>
             </thead>
             <tbody>
-              {reservas.map((reserva) => (
+              {reservasFiltradas.map((reserva) => (
                 <tr key={reserva.id}>
                   <td>
                     {reserva.cliente?.nombre} {reserva.cliente?.apellido}
@@ -316,7 +355,6 @@ function Reservas() {
                   </td>
                   <td>
                     <div className="actions">
-                      {/* solo tiene sentido cancelar cuando está CONFIRMADA */}
                       {reserva.estado === "CONFIRMADA" && (
                         <button
                           className="btn btn-warning btn-small"

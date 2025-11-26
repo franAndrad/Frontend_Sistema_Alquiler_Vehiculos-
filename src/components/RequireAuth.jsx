@@ -14,7 +14,6 @@ function isTokenValid() {
     const payloadJson = atob(padded);
     const payload = JSON.parse(payloadJson);
 
-    // Si no tiene exp, lo consideramos inválido
     if (!payload.exp) return false;
 
     const now = Math.floor(Date.now() / 1000);
@@ -31,7 +30,6 @@ export default function RequireAuth() {
   const valido = isTokenValid();
 
   if (!valido) {
-    // limpiar storage si está vencido o es inválido
     localStorage.removeItem("token");
     localStorage.removeItem("userEmail");
     localStorage.removeItem("userRol");
@@ -39,6 +37,5 @@ export default function RequireAuth() {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
-  // Token ok → mostrar rutas hijas
   return <Outlet />;
 }

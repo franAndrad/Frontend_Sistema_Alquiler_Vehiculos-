@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authAPI } from "../services/api";
 import "../components/Form.css";
+import "../components/Table.css";
 
 
 function Login() {
@@ -43,7 +44,7 @@ function Login() {
         <h2>Iniciar sesión</h2>
         <p className="subtitle">Ingresa con tus credenciales de empleado</p>
 
-        {error && <div className="alert-error">{error}</div>}
+        {error && <div className="error">{error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
