@@ -29,20 +29,8 @@
 .header-brand {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 40px;
   margin-bottom: 16px;
-}
-
-.brand-logo {
-  font-size: 32px;
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius);
-  backdrop-filter: blur(10px);
 }
 
 .brand-info {
@@ -52,6 +40,7 @@
   justify-content: center;
 }
 
+
 .brand-tagline {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.9);
@@ -60,7 +49,7 @@
   letter-spacing: 0.5px;
 }
 
-/* Zona derecha: email + botón logout */
+
 .header-right {
   display: flex;
   align-items: center;
@@ -347,4 +336,25 @@
     padding: 8px 14px;
     font-size: 0.85rem;
   }
+}
+
+.brand-logo {
+  font-size: 32px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius);
+  backdrop-filter: blur(10px);
+  text-decoration: none; /* que el Link no tenga subrayado */
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.brand-logo:hover {
+  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background-color: rgba(255, 255, 255, 0.28);
 }

@@ -211,7 +211,7 @@ function Empleados() {
                 >
                   <option value="">Seleccione un rol</option>
                   <option value="ADMIN">Administrador</option>
-                  <option value="ATENCION">Vendedor</option>
+                  <option value="ATENCION">Atencion al cliente</option>
                 </select>
               </div>
               <div className="form-group">

@@ -1,5 +1,18 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FaSignInAlt, FaSignOutAlt, FaHome, FaUsers, FaCar, FaFileContract, FaCalendarAlt, FaUserTie, FaTag, FaCog, FaExclamationTriangle, FaChartBar } from "react-icons/fa";
+import {
+  FaSignInAlt,
+  FaSignOutAlt,
+  FaHome,
+  FaUsers,
+  FaCar,
+  FaFileContract,
+  FaCalendarAlt,
+  FaUserTie,
+  FaTag,
+  FaCog,
+  FaExclamationTriangle,
+  FaChartBar,
+} from "react-icons/fa";
 import Logo from "./Logo";
 import "./Layout.css";
 
@@ -35,11 +48,16 @@ function Layout({ children }) {
     <div className="layout">
       <header className="header">
         <div className="header-brand">
-          <Logo size="medium" />
+          <Link to="/" className="brand-logo">
+            <Logo size="medium" />
+          </Link>
+
           <div className="brand-info">
-            <p className="brand-tagline">Tu alquiler de vehículos simplificado</p>
+            <p className="brand-tagline">
+              Tu alquiler de vehículos simplificado
+            </p>
           </div>
-          
+
           {isLogged && (
             <div className="header-right">
               {userEmail && (
@@ -49,7 +67,7 @@ function Layout({ children }) {
                 </span>
               )}
               <button className="logout-btn" onClick={handleLogout}>
-                <FaSignOutAlt style={{ marginRight: '6px' }} />
+                <FaSignOutAlt style={{ marginRight: "6px" }} />
                 Cerrar sesión
               </button>
             </div>
@@ -65,7 +83,7 @@ function Layout({ children }) {
                     : "login-btn"
                 }
               >
-                <FaSignInAlt style={{ marginRight: '6px' }} />
+                <FaSignInAlt style={{ marginRight: "6px" }} />
                 Iniciar sesión
               </Link>
             </div>
