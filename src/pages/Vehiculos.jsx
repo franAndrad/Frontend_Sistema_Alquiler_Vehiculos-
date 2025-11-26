@@ -165,8 +165,19 @@ function Vehiculos() {
     try {
       await vehiculoAPI.eliminar(id);
       await cargarVehiculos();
+      setError(null);
     } catch (err) {
-      setError(err.message);
+      if (
+        err.message &&
+        err.message.toLowerCase().includes("alquileres o reservas asociados")
+      ) {
+        setError(
+          "No se puede eliminar el vehículo porque tiene alquileres o reservas asociados. " +
+            "Primero finalice o elimine esos registros."
+        );
+      } else {
+        setError(err.message || "Error al eliminar el vehículo.");
+      }
     }
   };
 
@@ -181,7 +192,8 @@ function Vehiculos() {
     setEditingId(null);
     setShowForm(false);
     setPatenteError("");
-    setError(null);
+    // Si querés que el error de delete se mantenga, comentá esta línea:
+    // setError(null);
   };
 
   // 🔹 APLICAR FILTRO EN EL FRONT
@@ -200,13 +212,20 @@ function Vehiculos() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: "24px",
+          marginBottom: "16px",
         }}
       >
         <h2 style={{ margin: 0 }}>Vehículos</h2>
         <button
           className="btn btn-primary"
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => {
+            if (showForm) {
+              resetForm();
+            } else {
+              resetForm();
+              setShowForm(true);
+            }
+          }}
         >
           {showForm ? (
             <>
@@ -221,6 +240,13 @@ function Vehiculos() {
           )}
         </button>
       </div>
+
+      {/* Error global arriba */}
+      {error && (
+        <div className="error" style={{ marginBottom: "1rem" }}>
+          {error}
+        </div>
+      )}
 
       {/* Filtro por estado */}
       <div
@@ -251,7 +277,6 @@ function Vehiculos() {
       {showForm && (
         <div className="form-container" style={{ marginBottom: "2rem" }}>
           <h3>{editingId ? "Editar Vehículo" : "Nuevo Vehículo"}</h3>
-          {error && <div className="error">{error}</div>}
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">

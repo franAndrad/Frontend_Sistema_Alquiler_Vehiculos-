@@ -47,6 +47,7 @@ function Modelos() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+
     try {
       const data = {
         ...formData,
@@ -61,6 +62,7 @@ function Modelos() {
 
       await cargarModelos();
       resetForm();
+      setShowForm(false);
     } catch (err) {
       setError(err.message);
     }
@@ -73,6 +75,7 @@ function Modelos() {
       nombre: modelo.nombre || "",
       descripcion: modelo.descripcion || "",
     });
+    setError(null);
     setShowForm(true);
   };
 
@@ -82,8 +85,19 @@ function Modelos() {
     try {
       await modeloAPI.eliminar(id);
       await cargarModelos();
+      setError(null);
     } catch (err) {
-      setError(err.message);
+      if (
+        err.message &&
+        err.message.toLowerCase().includes("vehículos asociados")
+      ) {
+        setError(
+          "No se puede eliminar el modelo porque está siendo utilizado por uno o más vehículos. " +
+            "Primero reasigne o elimine esos vehículos."
+        );
+      } else {
+        setError(err.message || "Error al eliminar el modelo.");
+      }
     }
   };
 
@@ -94,7 +108,6 @@ function Modelos() {
       descripcion: "",
     });
     setEditingId(null);
-    setShowForm(false);
     setError(null);
   };
 
@@ -114,17 +127,31 @@ function Modelos() {
         <h2>Modelos</h2>
         <button
           className="btn btn-primary"
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => {
+            if (showForm) {
+              resetForm();
+              setShowForm(false);
+            } else {
+              resetForm();
+              setShowForm(true);
+            }
+          }}
         >
           {showForm ? "Cancelar" : "+ Nuevo Modelo"}
         </button>
       </div>
 
+      {/* Error global */}
+      {error && (
+        <div className="error" style={{ marginBottom: "1rem" }}>
+          {error}
+        </div>
+      )}
+
       {/* Formulario */}
       {showForm && (
         <div className="form-container" style={{ marginBottom: "2rem" }}>
           <h3>{editingId ? "Editar Modelo" : "Nuevo Modelo"}</h3>
-          {error && <div className="error">{error}</div>}
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">
@@ -172,7 +199,10 @@ function Modelos() {
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={resetForm}
+                onClick={() => {
+                  resetForm();
+                  setShowForm(false);
+                }}
               >
                 Cancelar
               </button>

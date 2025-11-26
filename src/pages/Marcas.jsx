@@ -40,8 +40,10 @@ function Marcas() {
       } else {
         await marcaAPI.crear(formData);
       }
-      cargarMarcas();
+
+      await cargarMarcas();
       resetForm();
+      setShowForm(false);
     } catch (err) {
       setError(err.message);
     }
@@ -52,6 +54,7 @@ function Marcas() {
     setFormData({
       nombre: marca.nombre || "",
     });
+    setError(null);
     setShowForm(true);
   };
 
@@ -60,16 +63,26 @@ function Marcas() {
 
     try {
       await marcaAPI.eliminar(id);
-      cargarMarcas();
+      await cargarMarcas();
+      setError(null);
     } catch (err) {
-      setError(err.message);
+      if (
+        err.message &&
+        err.message.toLowerCase().includes("modelos asociados")
+      ) {
+        setError(
+          "No se puede eliminar la marca porque está siendo utilizada por uno o más modelos. " +
+            "Primero reasigne o elimine esos modelos."
+        );
+      } else {
+        setError(err.message || "Error al eliminar la marca.");
+      }
     }
   };
 
   const resetForm = () => {
     setFormData({ nombre: "" });
     setEditingId(null);
-    setShowForm(false);
     setError(null);
   };
 
@@ -89,17 +102,30 @@ function Marcas() {
         <h2>Marcas</h2>
         <button
           className="btn btn-primary"
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => {
+            if (showForm) {
+              resetForm();
+              setShowForm(false);
+            } else {
+              resetForm();
+              setShowForm(true);
+            }
+          }}
         >
           {showForm ? "Cancelar" : "+ Nueva Marca"}
         </button>
       </div>
 
+      {/* Error global (arriba, como en Modelos) */}
+      {error && (
+        <div className="error" style={{ marginBottom: "1rem" }}>
+          {error}
+        </div>
+      )}
+
       {/* Formulario */}
       {showForm && (
         <div className="form-container" style={{ marginBottom: "2rem" }}>
-          {error && <div className="error">{error}</div>}
-
           <h3>{editingId ? "Editar Marca" : "Nueva Marca"}</h3>
 
           <form onSubmit={handleSubmit}>
@@ -119,7 +145,10 @@ function Marcas() {
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={resetForm}
+                onClick={() => {
+                  resetForm();
+                  setShowForm(false);
+                }}
               >
                 Cancelar
               </button>

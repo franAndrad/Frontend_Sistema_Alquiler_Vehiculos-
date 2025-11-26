@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
+import { FaEdit } from "react-icons/fa";
 import {
   alquilerAPI,
   clienteAPI,
   vehiculoAPI,
   empleadoAPI,
 } from "../services/api";
-import { FaEdit, FaTrash } from "react-icons/fa";
 import { formatearFecha, formatearFechaLegible } from "../utils/dateFormatter";
 
 import "../components/Table.css";
@@ -118,18 +118,6 @@ function Alquileres() {
 
     try {
       await alquilerAPI.finalizar(id);
-      await cargarAlquileres();
-      await cargarVehiculos();
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("¿Está seguro de eliminar este alquiler?")) return;
-
-    try {
-      await alquilerAPI.eliminar(id);
       await cargarAlquileres();
       await cargarVehiculos();
     } catch (err) {
@@ -334,7 +322,7 @@ function Alquileres() {
                   </td>
                   <td>
                     <div className="actions">
-                      {alquiler.estado !== "Finalizado" && (
+                      {alquiler.estado !== "FINALIZADO" && (
                         <button
                           className="btn btn-success btn-small"
                           onClick={() => handleFinalizar(alquiler.id)}
@@ -351,14 +339,7 @@ function Alquileres() {
                         <FaEdit style={{ marginRight: "0.3rem" }} />
                         Editar
                       </button>
-                      <button
-                        className="btn btn-danger btn-small"
-                        onClick={() => handleDelete(alquiler.id)}
-                        title="Eliminar alquiler"
-                      >
-                        <FaTrash style={{ marginRight: "0.3rem" }} />
-                        Eliminar
-                      </button>
+                      {/* Botón Eliminar eliminado */}
                     </div>
                   </td>
                 </tr>
