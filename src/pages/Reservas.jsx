@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit } from "react-icons/fa";
 import { reservaAPI, clienteAPI, vehiculoAPI } from "../services/api";
 import { formatearFechaLegible } from "../utils/dateFormatter";
 import "../components/Table.css";
@@ -77,6 +77,7 @@ function Reservas() {
 
       await cargarReservas();
       resetForm();
+      setShowForm(false);
     } catch (err) {
       setError(err.message);
     }
@@ -84,12 +85,20 @@ function Reservas() {
 
   const handleEdit = (reserva) => {
     setEditingId(reserva.id);
+
+    // Cortamos a YYYY-MM-DD por si vienen con hora desde el backend
+    const fechaInicio =
+      (reserva.fecha_inicio && reserva.fecha_inicio.slice(0, 10)) || "";
+    const fechaFin =
+      (reserva.fecha_fin && reserva.fecha_fin.slice(0, 10)) || "";
+
     setFormData({
       id_cliente: reserva.cliente?.id || "",
       id_vehiculo: reserva.vehiculo?.id || "",
-      fecha_inicio: reserva.fecha_inicio || "",
-      fecha_fin: reserva.fecha_fin || "",
+      fecha_inicio: fechaInicio,
+      fecha_fin: fechaFin,
     });
+
     setShowForm(true);
   };
 
@@ -104,17 +113,6 @@ function Reservas() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("¿Está seguro de eliminar esta reserva?")) return;
-
-    try {
-      await reservaAPI.eliminar(id);
-      await cargarReservas();
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
   const resetForm = () => {
     setFormData({
       id_cliente: "",
@@ -123,7 +121,6 @@ function Reservas() {
       fecha_fin: "",
     });
     setEditingId(null);
-    setShowForm(false);
     setError(null);
   };
 
@@ -143,7 +140,17 @@ function Reservas() {
         <h2>Reservas</h2>
         <button
           className="btn btn-primary"
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => {
+            if (showForm) {
+              // cerrar y limpiar
+              resetForm();
+              setShowForm(false);
+            } else {
+              // abrir en modo "nueva reserva"
+              resetForm();
+              setShowForm(true);
+            }
+          }}
         >
           {showForm ? "Cancelar" : "+ Nueva Reserva"}
         </button>
@@ -206,7 +213,10 @@ function Reservas() {
                   type="date"
                   value={formData.fecha_inicio}
                   onChange={(e) =>
-                    setFormData({ ...formData, fecha_inicio: e.target.value })
+                    setFormData({
+                      ...formData,
+                      fecha_inicio: e.target.value,
+                    })
                   }
                   required
                 />
@@ -219,7 +229,10 @@ function Reservas() {
                   type="date"
                   value={formData.fecha_fin}
                   onChange={(e) =>
-                    setFormData({ ...formData, fecha_fin: e.target.value })
+                    setFormData({
+                      ...formData,
+                      fecha_fin: e.target.value,
+                    })
                   }
                   required
                 />
@@ -230,7 +243,10 @@ function Reservas() {
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={resetForm}
+                onClick={() => {
+                  resetForm();
+                  setShowForm(false);
+                }}
               >
                 Cancelar
               </button>
@@ -275,24 +291,24 @@ function Reservas() {
                         fontSize: "0.85rem",
                         backgroundColor:
                           reserva.estado === "CONFIRMADA"
-                            ? "#e3fcec" 
+                            ? "#e3fcec"
                             : reserva.estado === "FINALIZADA"
-                            ? "#e0e7ff" 
+                            ? "#e0e7ff"
                             : reserva.estado === "EXPIRADA"
-                            ? "#fff3cd" 
+                            ? "#fff3cd"
                             : reserva.estado === "CANCELADA"
-                            ? "#ffeaea" 
+                            ? "#ffeaea"
                             : "#f8f9fa",
                         color:
                           reserva.estado === "CONFIRMADA"
                             ? "#218838"
                             : reserva.estado === "FINALIZADA"
-                            ? "#1e40af" 
+                            ? "#1e40af"
                             : reserva.estado === "EXPIRADA"
-                            ? "#856404" 
+                            ? "#856404"
                             : reserva.estado === "CANCELADA"
-                            ? "#c00" 
-                            : "#333", 
+                            ? "#c00"
+                            : "#333",
                       }}
                     >
                       {reserva.estado}
@@ -300,7 +316,8 @@ function Reservas() {
                   </td>
                   <td>
                     <div className="actions">
-                      {reserva.estado !== "Cancelada" && (
+                      {/* solo tiene sentido cancelar cuando está CONFIRMADA */}
+                      {reserva.estado === "CONFIRMADA" && (
                         <button
                           className="btn btn-warning btn-small"
                           onClick={() => handleCancelar(reserva.id)}
@@ -316,14 +333,6 @@ function Reservas() {
                       >
                         <FaEdit style={{ marginRight: "0.3rem" }} />
                         Editar
-                      </button>
-                      <button
-                        className="btn btn-danger btn-small"
-                        onClick={() => handleDelete(reserva.id)}
-                        title="Eliminar reserva"
-                      >
-                        <FaTrash style={{ marginRight: "0.3rem" }} />
-                        Eliminar
                       </button>
                     </div>
                   </td>
